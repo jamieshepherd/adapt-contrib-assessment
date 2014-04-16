@@ -153,7 +153,7 @@ define(function(require) {
         
     });
 
-    Adapt.on('articleView:postRender', function(view) {
+    Adapt.on('articleView:preRender', function(view) {
         if (view.model.get('_assessment')) {
             new AssessmentView({model:view.model});
         }
