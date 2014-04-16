@@ -78,8 +78,30 @@ define(function(require) {
             _.each(this.questionComponents, function(component) {
                 component.set('_isEnabledOnRevisit', false);
             });
+
+            if(this._assessment._randomisation && this._assessment._randomisation._isActive) {
+                this.setupRandomisation();
+            }
+        },
+
+        setupRandomisation: function() {
+            var randomisationModel = this._assessment._randomisation;
+            var blockModels = this.model.get('_children').models;
+            var startModels = blockModels.slice(0, randomisationModel._startBlockCount);
+            var numberOfQuestions = blockModels.length - randomisationModel._endBlockCount;
+            var questionModels = _.shuffle(blockModels.slice(randomisationModel._startBlockCount, numberOfQuestions));
+            var endModels = blockModels.slice(numberOfQuestions);
+            var randomCount = this.validateRandomCount(randomisationModel._randomCount, numberOfQuestions) ? this._assessment._randomCount : numberOfQuestions;
+
+            questionModels = questionModels.slice(0, randomCount);
+
+            this.model.get('_children').models = startModels.concat(questionModels).concat(endModels);
         },
         
+        validateRandomCount: function(randomCount, numberOfQuestions) {
+            return (randomCount !== undefined && _.isNumber(randomCount) && randomCount > 0 && randomCount < numberOfQuestions);
+        },
+
         getScore: function() {
             var score = 0;
 
