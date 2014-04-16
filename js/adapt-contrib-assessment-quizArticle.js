@@ -4,7 +4,7 @@ define(function(require) {
 
     var AssessmentView = Backbone.View.extend({
         initialize: function() {
-            this.listenTo(this.model, 'change:_isComplete', this.assessmentComplete);
+            this.listenTo(this.model, 'change:_isComplete', this.onIsCompleteChanged);
             this.listenTo(Adapt, 'remove', this.removeAssessment);
             this.setUpQuiz();
         },
@@ -22,7 +22,7 @@ define(function(require) {
             });
         },
 
-        assessmentComplete: function() { 
+        onIsCompleteChanged: function() { 
             function notComplete(model) {
                 return !model.get('_isComplete');
             }
