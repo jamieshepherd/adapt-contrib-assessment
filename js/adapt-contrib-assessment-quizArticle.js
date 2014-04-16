@@ -29,15 +29,15 @@ define(function(require) {
 
             if(notComplete(this.model) || _.some(this.questionComponents, notComplete)) return;
             
-            var isPercentageBased = this.model.get('_assessment')._isPercentageBased;
-            var scoreToPass = this.model.get('_assessment')._scoreToPass;
+            var isPercentageBased = this._assessment._isPercentageBased;
+            var scoreToPass = this._assessment._scoreToPass;
             var score = this.getScore();
             var scoreAsPercent = this.getScoreAsPercent();
             var isPass = false;
 
             Adapt.trigger('questionView:showFeedback', 
                 {
-                    title: this.model.get('_assessment')._completionMessage.title,
+                    title: this._assessment._completionMessage.title,
                     message: this.getFeedbackMessage(),
                     score: isPercentageBased ? scoreAsPercent + '%' : score
                 }
@@ -53,7 +53,7 @@ define(function(require) {
         },
 
         getFeedbackMessage: function() {
-            var feedback = (this.model.get('_assessment')._completionMessage.message);
+            var feedback = (this._assessment._completionMessage.message);
 
             feedback = feedback.replace("[SCORE]", this.getScore());
             feedback = feedback.replace("[MAXSCORE]", this.getMaxScore().toString());
@@ -64,7 +64,8 @@ define(function(require) {
         },
 
         setUpQuiz: function() {
-            this.model.get('_assessment').score = 0;
+            this._assessment = this.model.get('_assessment');
+            this._assessment.score = 0;
             this.showFeedback = false;
             this.questionComponents = this.getQuestionComponents();
             Adapt.mediator.on('questionView:feedback', _.bind(function(event) {
@@ -113,7 +114,7 @@ define(function(require) {
         },
         
         getBandedFeedback: function() {
-            var bands = this.model.get('_assessment')._bands;
+            var bands = this._assessment._bands;
             var percent = this.getScoreAsPercent();
             
             for (var i = (bands.length - 1); i >= 0; i--) {
