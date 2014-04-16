@@ -27,7 +27,7 @@ define(function(require) {
                 return !model.get('_isComplete');
             }
 
-            if(notComplete(this.model) || _.some(this.getQuestionComponents(), notComplete)) return;
+            if(notComplete(this.model) || _.some(this.questionComponents, notComplete)) return;
             
             var isPercentageBased = this.model.get('_assessment')._isPercentageBased;
             var scoreToPass = this.model.get('_assessment')._scoreToPass;
@@ -66,6 +66,7 @@ define(function(require) {
         setUpQuiz: function() {
             this.model.get('_assessment').score = 0;
             this.showFeedback = false;
+            this.questionComponents = this.getQuestionComponents();
             Adapt.mediator.on('questionView:feedback', _.bind(function(event) {
                 if (this.showFeedback) {
                     return;
@@ -73,7 +74,7 @@ define(function(require) {
                 event.preventDefault();
             }, this));
 
-            _.each(this.getQuestionComponents(), function(component) {
+            _.each(this.questionComponents, function(component) {
                 component.set('_isEnabledOnRevisit', false);
             });
         },
@@ -81,7 +82,7 @@ define(function(require) {
         getScore: function() {
             var score = 0;
 
-            _.each(this.getQuestionComponents(), function(component) {
+            _.each(this.questionComponents, function(component) {
                 if (component.get('_isCorrect') && component.get('_score')) {
                     score += component.get('_score');   
                 }
@@ -93,7 +94,7 @@ define(function(require) {
         getMaxScore: function() {
             var maxScore = 0;
 
-            _.each(this.getQuestionComponents(), function(component) {
+            _.each(this.questionComponents, function(component) {
                 if (component.get('_questionWeight')) {
                     maxScore += component.get('_questionWeight');
                 }
