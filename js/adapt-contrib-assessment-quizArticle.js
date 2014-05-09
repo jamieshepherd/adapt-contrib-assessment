@@ -27,7 +27,7 @@ define(function(require) {
                 return !model.get('_isComplete');
             }
 
-            if(notComplete(this.model) || _.some(this.getQuestionComponents(), notComplete)) return;
+            if (notComplete(this.model) || _.some(this.getQuestionComponents(), notComplete)) return;
             
             var isPercentageBased = this.model.get('_assessment')._isPercentageBased;
             var scoreToPass = this.model.get('_assessment')._scoreToPass;
@@ -39,6 +39,7 @@ define(function(require) {
                 {
                     title: this.model.get('_assessment')._completionMessage.title,
                     message: this.getFeedbackMessage(),
+                    associatedLearning: this.getAssociatedLearning(),
                     score: isPercentageBased ? scoreAsPercent + '%' : score
                 }
             );
@@ -61,6 +62,28 @@ define(function(require) {
             feedback = feedback.replace("[FEEDBACK]", this.getBandedFeedback().toString());
 
             return feedback;
+        },
+
+        getAssociatedLearning: function() {
+            var associatedLearning = [];
+
+            _.each(this.getQuestionComponents(), function(component) {
+            	if (component.has('_associatedLearning')) {
+	                var associatedLearningIDs = component.get('_associatedLearning');
+	                
+	                if (component.get('_isComplete') && !component.get('_isCorrect') && associatedLearningIDs.length > 0) {                    
+	                    _.each(associatedLearningIDs, function(id) {
+	                        var model = this.model.findByID(id);
+	                        
+	                        if (model && !_.contains(associatedLearning, model)) {
+	                            associatedLearning.push(model.get('title'));
+	                        }
+	                    }, this);
+	                }
+	            }
+            }, this);
+           
+            return associatedLearning;
         },
 
         setUpQuiz: function() {
