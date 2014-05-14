@@ -35,6 +35,7 @@ define(function(require) {
             var scoreAsPercent = this.getScoreAsPercent();
             var isPass = false;
             this.setFeedbackMessage();
+            this.setAssociatedLearning();
             this.model.set({
                 'feedbackTitle': this.model.get('_assessment')._completionMessage.title, 
                 'score': isPercentageBased ? scoreAsPercent + '%' : score
@@ -59,6 +60,32 @@ define(function(require) {
             feedback = feedback.replace("[FEEDBACK]", this.getBandedFeedback().toString());
 
             this.model.set('feedbackMessage', feedback);
+        },
+
+        setAssociatedLearning: function() {
+            var associatedLearning = [];
+
+            _.each(this.getQuestionComponents(), function(component) {
+                if (component.has('_associatedLearning')) {
+                    var associatedLearningIDs = component.get('_associatedLearning');
+                    
+                    if (component.get('_isComplete') && !component.get('_isCorrect') && associatedLearningIDs.length > 0) {                    
+                        _.each(associatedLearningIDs, function(id) {
+                            var model = this.model.findByID(id);
+
+                            if (model && model.has('title')) {
+                                var title = model.get('title');
+
+                                if (!_.contains(associatedLearning, title)) {
+                                   associatedLearning.push(title);
+                                }
+                            }
+                        }, this);
+                    }
+                }
+            }, this);
+           
+            this.model.set('_associatedLearning', associatedLearning);
         },
 
         setUpQuiz: function() {
