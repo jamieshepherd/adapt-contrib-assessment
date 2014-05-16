@@ -23,12 +23,6 @@ define(function(require) {
         },
 
         assessmentComplete: function() { 
-            function notComplete(model) {
-                return !model.get('_isComplete');
-            }
-
-            if(notComplete(this.model) || _.some(this.getQuestionComponents(), notComplete)) return;
-            
             var isPercentageBased = this.model.get('_assessment')._isPercentageBased;
             var scoreToPass = this.model.get('_assessment')._scoreToPass;
             var score = this.getScore();
@@ -40,7 +34,6 @@ define(function(require) {
                 'feedbackTitle': this.model.get('_assessment')._completionMessage.title, 
                 'score': isPercentageBased ? scoreAsPercent + '%' : score
             });
-            Adapt.trigger('questionView:showFeedback', this);
 
             if (isPercentageBased) {
                 isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
@@ -48,7 +41,13 @@ define(function(require) {
                 isPass = (score >= scoreToPass) ? true : false;
             }
 
-            Adapt.trigger('assessment:complete', {isPass: isPass, score: score, scoreAsPercent: scoreAsPercent});
+            Adapt.trigger('assessment:complete', {
+                isPass: isPass,
+                score: score,
+                scoreAsPercent: scoreAsPercent,
+                feedbackMessage: this.model.get('feedbackMessage'),
+                associatedLearning: this.model.get('_associatedLearning')
+            });
         },
 
         setFeedbackMessage: function() {
