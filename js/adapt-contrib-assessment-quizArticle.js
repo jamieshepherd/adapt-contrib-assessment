@@ -16,9 +16,7 @@ define(function(require) {
             // we are only interested in questions.  Currently we check for a
             // _questionWeight attribute
             return _.filter(childComponents.models, function(component) { 
-                if (component.get('_questionWeight')) {
-                    return component;
-                } 
+                if (component.get('_questionWeight')) return component; 
             });
         },
 
@@ -43,11 +41,8 @@ define(function(require) {
             });
             Adapt.trigger('questionView:showFeedback', this);
 
-            if (isPercentageBased) {
-                isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
-            } else {
-                isPass = (score >= scoreToPass) ? true : false;
-            }
+            if (isPercentageBased) isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
+            else isPass = (score >= scoreToPass) ? true : false;
 
             Adapt.trigger('assessment:complete', {isPass: isPass, score: score, scoreAsPercent: scoreAsPercent});
         },
@@ -76,10 +71,7 @@ define(function(require) {
 
                             if (model && model.has('title')) {
                                 var title = model.get('title');
-
-                                if (!_.contains(associatedLearning, title)) {
-                                   associatedLearning.push(title);
-                                }
+                                if (!_.contains(associatedLearning, title)) associatedLearning.push(title);
                             }
                         }, this);
                     }
@@ -94,23 +86,30 @@ define(function(require) {
             this._assessment.score = 0;
             this.showFeedback = false;
             this.questionComponents = this.getQuestionComponents();
+
             Adapt.mediator.on('questionView:feedback', _.bind(function(event) {
-                if (this.showFeedback) {
-                    return;
-                }
+                if (this.showFeedback) return;
                 event.preventDefault();
             }, this));
 
-            _.each(this.questionComponents, function(component) {
-                component.set({'_isEnabledOnRevisit': false, '_canShowFeedback': false}, {pluginName: "_assessment"});
-            });
+            this.overrideLockedAttributes();
 
             if(this._assessment._randomisation && this._assessment._randomisation._isActive) {
                 this.setupRandomisation();
             }
         },
 
+        overrideLockedAttributes: function() {
+            _.each(this.questionComponents, function(component) {
+                component.set({
+                    '_isEnabledOnRevisit': false, 
+                    '_canShowFeedback': false
+                }, { pluginName: "_assessment" });
+            });
+        },
+
         setupRandomisation: function() {
+
             var randomisationModel = this._assessment._randomisation;
             var blockModels = this.model.get('_children').models;
             var startModels = blockModels.slice(0, randomisationModel._startBlockCount);
@@ -132,9 +131,7 @@ define(function(require) {
             var score = 0;
 
             _.each(this.questionComponents, function(component) {
-                if (component.get('_isCorrect') && component.get('_score')) {
-                    score += component.get('_score');   
-                }
+                if (component.get('_isCorrect') && component.get('_score')) score += component.get('_score');
             });
 
             return score;
@@ -144,9 +141,7 @@ define(function(require) {
             var maxScore = 0;
 
             _.each(this.questionComponents, function(component) {
-                if (component.get('_questionWeight')) {
-                    maxScore += component.get('_questionWeight');
-                }
+                if (component.get('_questionWeight')) maxScore += component.get('_questionWeight');
             });
 
             return maxScore;
@@ -166,9 +161,7 @@ define(function(require) {
             var percent = this.getScoreAsPercent();
             
             for (var i = (bands.length - 1); i >= 0; i--) {
-                if (percent >= bands[i]._score) {
-                    return bands[i].feedback;
-                }
+                if (percent >= bands[i]._score) return bands[i].feedback;
             }
         },
 
