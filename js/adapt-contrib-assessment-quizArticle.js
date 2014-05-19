@@ -92,8 +92,11 @@ define(function(require) {
             this.model.get('_assessment').score = 0;
 
             _.each(this.getQuestionComponents(), function(component) {
-                component.set({'_isEnabledOnRevisit': false, '_canShowFeedback': false}, {pluginName: "_assessment"});
-            });
+                component.set({
+                    '_isEnabledOnRevisit': this.model.get('_isEnabledOnRevisit'),
+                    '_canShowFeedback': this.model.get('_canShowFeedback')
+                }, {pluginName: "_assessment"});
+            }, this);
         },
         
         getScore: function() {
