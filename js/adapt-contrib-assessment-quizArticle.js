@@ -102,7 +102,7 @@ define(function(require) {
             }, this));
 
             _.each(this.questionComponents, function(component) {
-                component.set('_isEnabledOnRevisit', false);
+                component.set({'_isEnabledOnRevisit': false, '_canShowFeedback': false}, {pluginName: "_assessment"});
             });
 
             if(this._assessment._randomisation && this._assessment._randomisation._isActive) {
