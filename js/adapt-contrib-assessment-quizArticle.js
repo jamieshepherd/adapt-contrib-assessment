@@ -4,7 +4,7 @@ define(function(require) {
 
     var AssessmentView = Backbone.View.extend({
         initialize: function() {
-            this.listenTo(this.model, 'change:_isComplete', this.assessmentComplete);
+            this.listenTo(this.model, 'change:_isComplete', this.onIsCompleteChanged);
             this.listenTo(Adapt, 'remove', this.removeAssessment);
             this.setUpQuiz();
         },
@@ -16,44 +16,38 @@ define(function(require) {
             // we are only interested in questions.  Currently we check for a
             // _questionWeight attribute
             return _.filter(childComponents.models, function(component) { 
-                if (component.get('_questionWeight')) {
-                    return component;
-                } 
+                if (component.get('_questionWeight')) return component; 
             });
         },
 
-        assessmentComplete: function() { 
+        onIsCompleteChanged: function() { 
             function notComplete(model) {
                 return !model.get('_isComplete');
             }
 
-            if (notComplete(this.model) || _.some(this.getQuestionComponents(), notComplete)) return;
+            if(notComplete(this.model) || _.some(this.questionComponents, notComplete)) return;
             
-            var isPercentageBased = this.model.get('_assessment')._isPercentageBased;
-            var scoreToPass = this.model.get('_assessment')._scoreToPass;
+            var isPercentageBased = this._assessment._isPercentageBased;
+            var scoreToPass = this._assessment._scoreToPass;
             var score = this.getScore();
             var scoreAsPercent = this.getScoreAsPercent();
             var isPass = false;
 
-            Adapt.trigger('questionView:showFeedback', 
-                {
-                    title: this.model.get('_assessment')._completionMessage.title,
-                    message: this.getFeedbackMessage(),
-                    associatedLearning: this.getAssociatedLearning(),
-                    score: isPercentageBased ? scoreAsPercent + '%' : score
-                }
-            );
+            this.setFeedbackMessage();
+            this.setAssociatedLearning();
+            this.model.set({
+                'feedbackTitle': this.model.get('_assessment')._completionMessage.title, 
+                'score': isPercentageBased ? scoreAsPercent + '%' : score
+            });
+            Adapt.trigger('questionView:showFeedback', this);
 
-            if (isPercentageBased) {
-                isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
-            } else {
-                isPass = (score >= scoreToPass) ? true : false;
-            }
+            if (isPercentageBased) isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
+            else isPass = (score >= scoreToPass) ? true : false;
 
             Adapt.trigger('assessment:complete', {isPass: isPass, score: score, scoreAsPercent: scoreAsPercent});
         },
 
-        getFeedbackMessage: function() {
+        setFeedbackMessage: function() {
             var feedback = (this.model.get('_assessment')._completionMessage.message);
 
             feedback = feedback.replace("[SCORE]", this.getScore());
@@ -61,53 +55,83 @@ define(function(require) {
             feedback = feedback.replace("[PERCENT]", this.getScoreAsPercent().toString());
             feedback = feedback.replace("[FEEDBACK]", this.getBandedFeedback().toString());
 
-            return feedback;
+            this.model.set('feedbackMessage', feedback);
         },
 
-        getAssociatedLearning: function() {
+        setAssociatedLearning: function() {
             var associatedLearning = [];
 
             _.each(this.getQuestionComponents(), function(component) {
-            	if (component.has('_associatedLearning')) {
-	                var associatedLearningIDs = component.get('_associatedLearning');
-	                
-	                if (component.get('_isComplete') && !component.get('_isCorrect') && associatedLearningIDs.length > 0) {                    
-	                    _.each(associatedLearningIDs, function(id) {
-	                        var model = this.model.findByID(id);
-	                        
-	                        if (model && !_.contains(associatedLearning, model)) {
-	                            associatedLearning.push(model.get('title'));
-	                        }
-	                    }, this);
-	                }
-	            }
+                if (component.has('_associatedLearning')) {
+                    var associatedLearningIDs = component.get('_associatedLearning');
+                    
+                    if (component.get('_isComplete') && !component.get('_isCorrect') && associatedLearningIDs.length > 0) {                    
+                        _.each(associatedLearningIDs, function(id) {
+                            var model = this.model.findByID(id);
+
+                            if (model && model.has('title')) {
+                                var title = model.get('title');
+                                if (!_.contains(associatedLearning, title)) associatedLearning.push(title);
+                            }
+                        }, this);
+                    }
+                }
             }, this);
            
-            return associatedLearning;
+            this.model.set('_associatedLearning', associatedLearning);
         },
 
         setUpQuiz: function() {
-            this.model.get('_assessment').score = 0;
+            this._assessment = this.model.get('_assessment');
+            this._assessment.score = 0;
             this.showFeedback = false;
+            this.questionComponents = this.getQuestionComponents();
+
             Adapt.mediator.on('questionView:feedback', _.bind(function(event) {
-                if (this.showFeedback) {
-                    return;
-                }
+                if (this.showFeedback) return;
                 event.preventDefault();
             }, this));
 
-            _.each(this.getQuestionComponents(), function(component) {
-                component.set('_isEnabledOnRevisit', false);
+            this.overrideLockedAttributes();
+
+            if(this._assessment._randomisation && this._assessment._randomisation._isActive) {
+                this.setupRandomisation();
+            }
+        },
+
+        overrideLockedAttributes: function() {
+            _.each(this.questionComponents, function(component) {
+                component.set({
+                    '_isEnabledOnRevisit': false, 
+                    '_canShowFeedback': false
+                }, { pluginName: "_assessment" });
             });
         },
+
+        setupRandomisation: function() {
+
+            var randomisationModel = this._assessment._randomisation;
+            var blockModels = this.model.get('_children').models;
+            var startModels = blockModels.slice(0, randomisationModel._startBlockCount);
+            var numberOfQuestions = blockModels.length - randomisationModel._endBlockCount;
+            var questionModels = _.shuffle(blockModels.slice(randomisationModel._startBlockCount, numberOfQuestions));
+            var endModels = blockModels.slice(numberOfQuestions);
+            var randomCount = this.validateRandomCount(randomisationModel._randomCount, numberOfQuestions) ? this._assessment._randomCount : numberOfQuestions;
+
+            questionModels = questionModels.slice(0, randomCount);
+
+            this.model.get('_children').models = startModels.concat(questionModels).concat(endModels);
+        },
         
+        validateRandomCount: function(randomCount, numberOfQuestions) {
+            return (randomCount !== undefined && _.isNumber(randomCount) && randomCount > 0 && randomCount < numberOfQuestions);
+        },
+
         getScore: function() {
             var score = 0;
 
-            _.each(this.getQuestionComponents(), function(component) {
-                if (component.get('_isCorrect') && component.get('_score')) {
-                    score += component.get('_score');   
-                }
+            _.each(this.questionComponents, function(component) {
+                if (component.get('_isCorrect') && component.get('_score')) score += component.get('_score');
             });
 
             return score;
@@ -116,10 +140,8 @@ define(function(require) {
         getMaxScore: function() {
             var maxScore = 0;
 
-            _.each(this.getQuestionComponents(), function(component) {
-                if (component.get('_questionWeight')) {
-                    maxScore += component.get('_questionWeight');
-                }
+            _.each(this.questionComponents, function(component) {
+                if (component.get('_questionWeight')) maxScore += component.get('_questionWeight');
             });
 
             return maxScore;
@@ -135,24 +157,21 @@ define(function(require) {
         },
         
         getBandedFeedback: function() {
-            var bands = this.model.get('_assessment')._bands;
+            var bands = this._assessment._bands;
             var percent = this.getScoreAsPercent();
             
             for (var i = (bands.length - 1); i >= 0; i--) {
-                if (percent >= bands[i]._score) {
-                    return bands[i].feedback;
-                }
+                if (percent >= bands[i]._score) return bands[i].feedback;
             }
         },
 
         removeAssessment: function() {
-            this.showFeedback = true;
             this.remove();
         }
         
     });
 
-    Adapt.on('articleView:postRender', function(view) {
+    Adapt.on('articleView:preRender', function(view) {
         if (view.model.get('_assessment')) {
             new AssessmentView({model:view.model});
         }

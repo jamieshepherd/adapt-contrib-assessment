@@ -1,4 +1,10 @@
 "_assessment": {
+    "_randomisation": {
+        "_isActive": true,
+        "_startBlockCount": 0,
+        "_endBlockCount": 0,
+        "_randomCount": "all"
+    },
     "_isPercentageBased" : true,
     "_scoreToPass" : 60,
     "_completionMessage" : {
