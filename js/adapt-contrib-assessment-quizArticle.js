@@ -1,6 +1,7 @@
 define(function(require) {
 
     var Adapt = require('coreJS/adapt');
+    var QuestionBank = require('extensions/adapt-contrib-assessment/js/QuestionBank');
 
     var AssessmentView = Backbone.View.extend({
         initialize: function() {
@@ -86,17 +87,59 @@ define(function(require) {
             this._assessment.score = 0;
             this.showFeedback = false;
             this.questionComponents = this.getQuestionComponents();
+            this.questionBanks = [];
+            this.allQuestionBlocks = [];
+            //this.quizQuestions = [];
 
-            Adapt.mediator.on('questionView:feedback', _.bind(function(event) {
+            // default values are 0 start blocks, 1 end block (results screen)
+            this.startBlockCount = (_.isNumber(this._assessment._startBlockCount)) ? this._assessment._startBlockCount : 0;
+            this.endBlockCount = (_.isNumber(this._assessment._endBlockCount)) ? this._assessment._endBlockCount : 1;
+
+            /*Adapt.on('questionView:feedback', _.bind(function(event) {
                 if (this.showFeedback) return;
                 event.preventDefault();
-            }, this));
+            }, this));*/
 
             this.overrideLockedAttributes();
 
-            if(this._assessment._randomisation && this._assessment._randomisation._isActive) {
+           //console.log("quizArticle:setUpQuiz: " + this._assessment);
+
+            if(this._assessment._banks && this._assessment._banks._isActive && this._assessment._banks._split.length > 1){
+                var banks = this._assessment._banks._split.split(",");
+            
+                _.each(banks, _.bind(function(bank, index){
+                    this.questionBanks.push(new QuestionBank((index+1), bank));  
+                },this));
+
+                this.allQuestionBlocks = this.model.getChildren().slice(this.startBlockCount, this._assessment._banks._split.length - this.endBlockCount);
+                            
+                this.populateQuestionBanks();
+                
+                this.buildBankedQuiz();
+            }
+            else if(this._assessment._randomisation && this._assessment._randomisation._isActive) {
                 this.setupRandomisation();
             }
+        },
+
+        populateQuestionBanks: function() {        
+            //console.log("populateQuestionBanks " + this.allQuestionBlocks.length);
+
+            _.each(this.allQuestionBlocks, _.bind(function(questionBlock){
+                //console.log("questionBlock",questionBlock);
+                var bankID = questionBlock.get('_quizBankID');
+                var questionBank = this.getBankByID(bankID);
+                //console.log(questionBank,questionBank);
+                questionBank.addBlock(questionBlock); 
+            }, this));
+        },
+
+        getBankByID: function(id) {
+            //console.log("getBankByID: " + id);
+            for(var i=0;i<this.questionBanks.length;i++){
+                var qb = this.questionBanks[i];
+                if(id===qb.getID()) return qb;
+            }            
         },
 
         overrideLockedAttributes: function() {
@@ -109,41 +152,73 @@ define(function(require) {
         },
 
         setupRandomisation: function() {
+            console.log("quizArticle:setupRandomisation");
 
             var randomisationModel = this._assessment._randomisation;
             var blockModels = this.model.get('_children').models;
-            var startModels = blockModels.slice(0, randomisationModel._startBlockCount);
-            var numberOfQuestions = blockModels.length - randomisationModel._endBlockCount;
-            var questionModels = _.shuffle(blockModels.slice(randomisationModel._startBlockCount, numberOfQuestions));
+
+            console.log("b4 randomisation....");
+             _.each(blockModels, function(blockModel){
+                console.log(blockModel.get("_parentId") + " - " + blockModel.get('_id'));
+                var components = blockModel.get('_children').models;
+                _.each(components, function(component){
+                    console.log(component.get("_parentId") + " - " + component.get('_id') + " - " + component.get("title"));
+                })
+            })
+
+            var startModels = blockModels.slice(0, this.startBlockCount);
+            var numberOfQuestions = blockModels.length - this.endBlockCount;
+            var questionModels = _.shuffle(blockModels.slice(this.startBlockCount, numberOfQuestions));
             var endModels = blockModels.slice(numberOfQuestions);
             var randomCount = this.validateRandomCount(randomisationModel._randomCount, numberOfQuestions) ? this._assessment._randomCount : numberOfQuestions;
 
             questionModels = questionModels.slice(0, randomCount);
 
+            console.log("after randomisation....");
+             _.each(questionModels, function(questionModel){
+                console.log(questionModel.get("_parentId") + " - " + questionModel.get('_id'));
+                 var components = questionModel.get('_children').models;
+                _.each(components, function(component){
+                    console.log(component.get("_parentId") + " - " + component.get('_id') + " - " + component.get("title"));
+                })
+            })
+
             this.model.get('_children').models = startModels.concat(questionModels).concat(endModels);
+        },
+
+        buildBankedQuiz: function() {
+            var models = this.model.get('_children').models;
+            var startModels = models.slice(0, this.startBlockCount);
+            var endModels = models.slice(models.length-this.endBlockCount); 
+            var questionModels = [];
+             
+            _.each(this.questionBanks, function(questionBank){
+                var questions = questionBank.getRandomQuestionBlocks();
+                questionModels = questionModels.concat(questions);
+            })
+          
+            if(this._assessment._randomisation && this._assessment._randomisation._isActive) questionModels = _.shuffle(questionModels);
+            var bankedModels = startModels.concat(questionModels).concat(endModels);
+            this.model.get('_children').models = bankedModels;
         },
         
         validateRandomCount: function(randomCount, numberOfQuestions) {
-            return (randomCount !== undefined && _.isNumber(randomCount) && randomCount > 0 && randomCount < numberOfQuestions);
+          return (randomCount !== undefined && _.isNumber(randomCount) && randomCount > 0 && randomCount < numberOfQuestions);
         },
 
         getScore: function() {
             var score = 0;
-
             _.each(this.questionComponents, function(component) {
                 if (component.get('_isCorrect') && component.get('_score')) score += component.get('_score');
             });
-
             return score;
         },
         
         getMaxScore: function() {
             var maxScore = 0;
-
             _.each(this.questionComponents, function(component) {
                 if (component.get('_questionWeight')) maxScore += component.get('_questionWeight');
             });
-
             return maxScore;
         },
         
