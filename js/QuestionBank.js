@@ -1,57 +1,59 @@
 define(function(require) {
     
-    var Adapt = require('require');
+   var QuestionBank = function(id, numQuestionBlocks){
+    
+        this.initialise(id, numQuestionBlocks);
+    };
 
-    var QuestionBank = {};
-
-    QuestionBank.prototype.initialise = function(id, numQuestions){
-       //console.log('QuestionBank.initialize: '); 
-        this._id = id;
-        this._numQuestions = numQuestions;   
+    QuestionBank.prototype = {
         
-        this.questions = [];
-        this.unUsedQuestions = undefined;
-    };
-    
-    QuestionBank.prototype.getID = function(){ 
-        return this._id; 
-    };
-    
-    QuestionBank.prototype.addBlock = function(block){
-        //if(console) console.log("QuestionBank::addScreen " + block.id + " added to Bank ID: " + this._id);  
-        this.questions.push(block);    
-    };
-    
-    QuestionBank.prototype.getRandomQuestions = function(){
+        initialise: function(id, numQuestionBlocks){
+            //console.log('QuestionBank.initialize: ' + id + " - " + numQuestionBlocks); 
+            this._id = id;
+            this._numQuestionBlocks = numQuestionBlocks; 
+            this.questionBlocks = [];
+            this.unUsedQuestionBlocks = undefined;
+        },
         
-        var questions = [];
+        getID: function(){ 
+            return this._id; 
+        },
         
-        for (var i = 0; i < this._numQuestions; i++) {
-            var question = this.getRandomQuestion();
-            if (question !== undefined) questions.push(question);
-        }
+        addBlock: function(block){
+            console.log("QuestionBank::addBlock " + block.get('_id') + " added to Bank ID: " + this._id);  
+            this.questionBlocks.push(block);    
+        },
+        
+       getRandomQuestionBlocks: function(){
             
-        return questions;
-    };
-    
-    QuestionBank.prototype.getRandomQuestion = function() {          
-        if (this.unUsedQuestions === undefined) {
-            this.unUsedQuestions = this.questions.slice(0);
-        }        
+            var questionBlocks = [];
+            
+            for (var i = 0; i < this._numQuestionBlocks; i++) {
+                var question = this.getRandomQuestion();
+                if (question !== undefined) questionBlocks.push(question);
+            }
+                
+            return questionBlocks;
+        },
         
-        if (this.unUsedQuestions !== undefined && this.unUsedQuestions.length < 1)
-        {
-           if(console) console.error("QuestionBank::getRandomQuestion: Error, no more unused screens");
-            return undefined;
+        getRandomQuestion: function(){          
+            if (this.unUsedQuestionBlocks === undefined) {
+                this.unUsedQuestionBlocks = this.questionBlocks.slice(0);
+            }        
+            
+            if (this.unUsedQuestionBlocks !== undefined && this.unUsedQuestionBlocks.length < 1) {
+               console.error("QuestionBank::getRandomQuestionBlock: Error, no more unused screens. Please check blocks.json that there are sufficient question blocks with _quizBankID " + this._id);
+               return undefined;
+            }
+            
+            var index = Math.round(Math.random() * (this.unUsedQuestionBlocks.length-1));
+            var questionBlock = this.unUsedQuestionBlocks[index];
+            
+            // remove the question so we don't get it again
+            this.unUsedQuestionBlocks.splice(index,1);
+            
+            return questionBlock;
         }
-        
-        var index = Math.round(Math.random() * (this.unUsedQuestions.length-1));
-        var question = this.unUsedQuestions[index];
-        
-        // remove the question so we don't get it again
-        this.unUsedQuestions.splice(index,1);
-        
-        return question;
     }
 
     return QuestionBank;
