@@ -76,7 +76,7 @@ define(function(require) {
                                 var title = model.get('title');
 
                                 if (!_.contains(associatedLearning, title)) {
-                                   associatedLearning.push(title);
+                                   associatedLearning.push({id: id, type: model._siblings, title: title});
                                 }
                             }
                         }, this);
