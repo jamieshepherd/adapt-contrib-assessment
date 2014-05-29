@@ -153,10 +153,10 @@ define(function(require) {
         overrideLockedAttributes: function() {
             _.each(this.questionComponents, function(component) {
                 component.set({
-                    '_isEnabledOnRevisit': false, 
-                    '_canShowFeedback': false
-                }, { pluginName: "_assessment" });
-            });
+                    '_isEnabledOnRevisit': this.model.get('_isEnabledOnRevisit'),
+                    '_canShowFeedback': this.model.get('_canShowFeedback')
+                }, {pluginName: "_assessment"});
+            }, this);
         },
 
         setupRandomisation: function() {
