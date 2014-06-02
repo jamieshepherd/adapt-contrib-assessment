@@ -1,9 +1,13 @@
 "_assessment": {
+    "_startBlockCount": 0,
+    "_endBlockCount": 1,
+    "_banks":{
+        "_isEnabled": false,
+        "_split": "1,1,1"
+    },
     "_randomisation": {
-        "_isActive": true,
-        "_startBlockCount": 0,
-        "_endBlockCount": 0,
-        "_randomCount": "all"
+        "_isEnabled": false,
+        "_blockCount": 6
     },
     "_isPercentageBased" : true,
     "_scoreToPass" : 60,

@@ -213,9 +213,9 @@ define(function(require) {
              _.each(blockModels, function(blockModel){
                 //console.log(blockModel.get("_parentId") + " - " + blockModel.get('_id'));
                 var components = blockModel.get('_children').models;
-              /*  _.each(components, function(component){
-                    console.log(component.get("_parentId") + " - " + component.get('_id') + " - " + component.get("title"));
-                })*/
+                _.each(components, function(component){
+                    console.log(component.get("_parentId") + " - " + blockModel.get('_quizBankID') + " - " + component.get('_id') + " - " + component.get("title"));
+                })
             })
 
             var startModels = blockModels.slice(0, this.startBlockCount);
@@ -231,9 +231,9 @@ define(function(require) {
              _.each(questionModels, function(questionModel){
                 //console.log(questionModel.get("_parentId") + " - " + questionModel.get('_id'));
                  var components = questionModel.get('_children').models;
-                /*_.each(components, function(component){
+                _.each(components, function(component){
                     console.log(component.get("_parentId") + " - " + component.get('_id') + " - " + component.get("title"));
-                })*/
+                })
             })
 
             this.model.get('_children').models = startModels.concat(questionModels).concat(endModels);
@@ -258,11 +258,6 @@ define(function(require) {
             //console.log("quizArticle.js,buildBankedQuiz setting models")
             this.model.get('_children').models = bankedModels;
                        
-            // debug
-            _.each(currentPage.findDescendants('components').models, function(component){
-                console.log(component.get('_id') +  " - " + component.get('_parentId'));
-            })
-
             this.triggerPageUpdated();
         },
 
