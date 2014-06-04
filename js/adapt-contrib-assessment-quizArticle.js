@@ -11,6 +11,7 @@ define(function(require) {
             if(!this.model.get('allBlockModels')) this.model.set('allBlockModels', this.model.getChildren().models)
             // only if we're resetting and re-enabling the quiz
             if(this.model.get('_isEnabledOnRevisit') || !this.model.get('_assessmentCompleteInSession')) this.model.getChildren().models = this.model.get('allBlockModels');
+
             this.setUpQuiz();
         },
 
@@ -58,7 +59,8 @@ define(function(require) {
             var isPass = false;
 
             this.setFeedbackMessage();
-            this.setAssociatedLearning();
+            if(this.getFeedbackBand()._showAssociatedLearning) this.setAssociatedLearning();
+            
             this.model.set({
                 'feedbackTitle': this.model.get('_assessment')._completionMessage.title, 
                 'score': isPercentageBased ? scoreAsPercent + '%' : score
@@ -84,8 +86,8 @@ define(function(require) {
             feedback = feedback.replace("[SCORE]", this.getScore());
             feedback = feedback.replace("[MAXSCORE]", this.getMaxScore().toString());
             feedback = feedback.replace("[PERCENT]", this.getScoreAsPercent().toString());
-            feedback = feedback.replace("[FEEDBACK]", this.getBandedFeedback().toString());
-
+            feedback = feedback.replace("[FEEDBACK]", this.getFeedbackBand().feedback.toString());
+            
             this.model.set('feedbackMessage', feedback);
         },
 
@@ -96,6 +98,7 @@ define(function(require) {
                 if (component.has('_associatedLearning')) {
                     var associatedLearningIDs = component.get('_associatedLearning');
                     
+                    console.log("associatedLearningIDs.length: " + associatedLearningIDs.length);
                     if (component.get('_isComplete') && !component.get('_isCorrect') && associatedLearningIDs.length > 0) {                    
                         _.each(associatedLearningIDs, function(id) {
                             var model = this.model.findByID(id);
@@ -148,22 +151,48 @@ define(function(require) {
                 _.each(this.allQuestionBlocks, function(block){
                     console.log("question block id " + block.get('_id'));
                 })*/
-                            
+
+                this.setAllBlocksUnavailable();
                 this.populateQuestionBanks();
-                
                 this.buildBankedQuiz();
+                this.setAvailableBlocks();
             }
             else if(this._assessment._randomisation && this._assessment._randomisation._isEnabled) {
+                this.setAllBlocksUnavailable();
                 this.setupRandomisation();
+                this.setAvailableBlocks();
             }
+
+            /*var maxScore = 0;
+           _.each(this.model.findDescendants('components').models, function(component){
+                if(component.get('_component') != "results") {
+                    console.log(component.get('_id') + " - " + component.get('_questionWeight'));
+                    maxScore += component.get('_questionWeight');
+                }
+           })
+           console.log("maxScore: " + maxScore);*/
 
             this.allChildComponents = this.getAllChildComponents();
             this.questionComponents = this.getQuestionComponents();
             this.overrideLockedAttributes();
         },
 
+        setAllBlocksUnavailable: function() {
+            //console.log("quizArticle, setAllBlocksUnavailable " +this.model.getChildren().models.length);
+            _.each(this.model.getChildren().models, function(block){
+                block.set('_isAvailable', false, {pluginName: '_isAvailable'});
+            });
+        },
+
+        setAvailableBlocks: function() {
+             //console.log("quizArticle, setAvailableBlocks " + this.model.get('_children').models.length);
+             _.each(this.model.get('_children').models, function(block){
+                block.set('_isAvailable', true, {pluginName: '_isAvailable'});                
+             })
+        },
+
         populateQuestionBanks: function() {        
-            console.log("populateQuestionBanks " + this.allQuestionBlocks.length);
+            //console.log("populateQuestionBanks " + this.allQuestionBlocks.length);
 
             _.each(this.allQuestionBlocks, _.bind(function(questionBlock){
                 //console.log("questionBlock",questionBlock);
@@ -204,7 +233,7 @@ define(function(require) {
         },
 
         setupRandomisation: function() {
-            console.log("quizArticle:setupRandomisation");
+            //console.log("quizArticle:setupRandomisation");
 
             var randomisationModel = this._assessment._randomisation;
             var blockModels = this.model.get('_children').models;
@@ -220,7 +249,6 @@ define(function(require) {
 
             var startModels = blockModels.slice(0, this.startBlockCount);
             var numberOfQuestionBlocks = blockModels.length - this.endBlockCount;
-            console.log("numberOfQuestionBlocks: " + numberOfQuestionBlocks);
             var questionModels = _.shuffle(blockModels.slice(this.startBlockCount, numberOfQuestionBlocks));
             var endModels = blockModels.slice(numberOfQuestionBlocks);
             var randomCount = this.validateRandomCount(randomisationModel._blockCount, numberOfQuestionBlocks) ? randomisationModel._blockCount : numberOfQuestionBlocks;
@@ -295,12 +323,12 @@ define(function(require) {
             this.model.set('_assessment').score = 0;
         },
         
-        getBandedFeedback: function() {
+        getFeedbackBand: function() {
             var bands = this._assessment._bands;
             var percent = this.getScoreAsPercent();
             
             for (var i = (bands.length - 1); i >= 0; i--) {
-                if (percent >= bands[i]._score) return bands[i].feedback;
+                if (percent >= bands[i]._score) return bands[i];
             }
         },
 
