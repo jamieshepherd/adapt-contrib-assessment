@@ -180,14 +180,14 @@ define(function(require) {
         setAllBlocksUnavailable: function() {
             //console.log("quizArticle, setAllBlocksUnavailable " +this.model.getChildren().models.length);
             _.each(this.model.getChildren().models, function(block){
-                block.set('_isAvailable', false, {pluginName: '_isAvailable'});
+                block.set('_isAvailable', false, {pluginName: '_assessment'});
             });
         },
 
         setAvailableBlocks: function() {
              //console.log("quizArticle, setAvailableBlocks " + this.model.get('_children').models.length);
              _.each(this.model.get('_children').models, function(block){
-                block.set('_isAvailable', true, {pluginName: '_isAvailable'});                
+                block.set('_isAvailable', true, {pluginName: '_assessment'});                
              })
         },
 
