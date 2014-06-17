@@ -10,12 +10,12 @@ A [sample JSON](https://github.com/cgkineo/adapt-contrib-assessment/blob/master/
     "_startBlockCount": 0,
     "_endBlockCount": 1,
     "_banks":{
-        "_isEnabled": false,
+        "_isEnabled": true,
         "_split": "1,2,1"
     },
     "_randomisation": {
-        "_isEnabled": false,
-        "_blockCount": 6
+        "_isEnabled": true,
+        "_blockCount": 4
     },
     "_isPercentageBased" : true,
     "_scoreToPass" : 60,
@@ -50,7 +50,8 @@ A description of attributes is as follows:
 | :------------ |:-------------|:-----|
 | _startBlockCount  | int   | Number of blocks appear in order at the start of the quiz, before question blocks are randomised or put into banks. Typically used for showing initial presentation blocks |
 | _endBlockCount    | int   | Number of blocks appear at the end of the quiz, after randomised or banked question blocks |
-| _banks    |  object |  _Set "_isEnabled" (bool) to true to put question blocks into banks. "_split" (String) sets the split across banks e.g. "1,2,1" will pull 1 from bank 1, 2 from bank 2, 1 from bank 3 |
+| _banks    |  object |  Set "_isEnabled" (bool) to true to put question blocks into banks. "_split" (String) sets the split across banks e.g. "1,2,1" will pull 1 from bank 1, 2 from bank 2, 1 from bank 3, Quiz blocks in blocks.json have a "_quizBankID" property e.g. "_quizBankID": 1 |
+| _randomisation | object  | Set "_isEnabled" (bool) to true to turn on randomisation of question blocks. "_blockCount" (int) sets the number of random blocks to be displayed. _randomisation -> _isEnabled can be used in conjunction with "_banks" |
 | _isPercentageBased        | bool |Set this to *true* if the assessment should work on percentages, or *false* for otherwise|
 | _scoreToPass         | int      | This is the 'pass' mark for the assessment.  If _isPercentageBased is set to *true* this will be a percentage, e.g. 60 would equal 60% |
 | _completionMessage            | object | An object containing *title* and *message* string values.  Note that *message* can contain the following placeholders: [SCORE], [MAXSCORE] and [FEEDBACK] |
