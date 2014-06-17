@@ -86,4 +86,17 @@ A description of attributes is as follows:
         
         </td>        
     </tr>
+    <tr valign="top">
+        <td><i>adapt:modelUpdated</i></td>
+        <td>Triggered when the page model has been updated - after blocks randomisation or question block banking</td>
+        <td>
+            <table>
+                <tr>
+                    <td>currentPage</td>
+                    <td>ContentObjectModel</td>
+                </tr>
+            </table>
+        
+        </td>        
+    </tr>
 </table>
