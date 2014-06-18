@@ -32,7 +32,7 @@ define(function(require) {
             // we are only interested in questions. Currently we check for a
             // _questionWeight attribute
             return _.filter(this.allChildComponents, function(componentModel) { 
-                if (componentModel.get('_questionWeight')) return componentModel; 
+                if (componentModel.get('_isQuestionType')) return componentModel; 
             });
         },
 
@@ -139,7 +139,6 @@ define(function(require) {
                     this.questionBanks.push(new QuestionBank((index+1), bank));  
                 },this));
 
-                //console.log("numQuestionBlocksRequired: " + numQuestionBlocksRequired);
                 /*console.log("this.model.getChildren().length: " + this.model.getChildren().length);
                 console.log("this.model.getChildren().models.length: " + this.model.getChildren().models.length);
                 console.log("this.model.get('_children').models.length: " + this.model.get('_children').models.length);*/
@@ -338,10 +337,10 @@ define(function(require) {
         
     });
 
-    Adapt.on('articleView:preRender', function(view) {
+    /*Adapt.on('articleView:preRender', function(view) {
         if (view.model.get('_assessment')) {
             new AssessmentView({model:view.model});
         }
-    });
+    });*/
 
 });
