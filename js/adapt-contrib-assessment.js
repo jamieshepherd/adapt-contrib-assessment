@@ -14,12 +14,10 @@ define(function(require) {
 
 		var assessmentModel = new AssessmentModel(articleModel.get('_assessment'));
 		assessmentModel.set('_children', articleModel.getChildren());
-		// GM - can these be moved to _assessment object?
-		assessmentModel.set('_isEnabledOnRevisit', articleModel.get('_isEnabledOnRevisit'));
+		assessmentModel.set('_allChildModels', articleModel.getChildren().models);
+		// GM - can this be moved to _assessment object?
 		assessmentModel.set('_canShowFeedback', articleModel.get('_canShowFeedback'));
-		
 
-		//assessmentModel.setChildren(articleModel.getChildren());
 		articleModel.set({assessmentModel:assessmentModel});
 		articleModel.getChildren().models = assessmentModel.setQuizData();
 
@@ -29,15 +27,16 @@ define(function(require) {
 		});
 
 		articleModel.get('assessmentModel').on('assessment:complete', function(data){
-			console.log("hey I'm article assessment " + this.get('_id') + " and I've just been completed. I should reset my data....");
-			console.log("articleModel",articleModel);
-			console.log(this,this);
+			console.log("hey I'm article assessment " + this.get('_id') + " and I've just been completed. I should reset my data if _isEnabledOnRevisit: " + this.get('_isEnabledOnRevisit'));
+			console.log("complete in session?: " + this.get('_quizCompleteInSession') + ", is reset on revsit: "+ this.get('_isResetOnRevisit'));
+			articleModel.getChildren().models = assessmentModel.setQuizData();
 		});
 	}
 
 	Adapt.on('articleView:preRender', function(view) {
 		console.log("on article preRender: ",view.model);
-        if (view.model.get('_assessment')) {
+		if (view.model.get('_assessment')) {
+			//view.model.resetQuizData();
             new AssessmentView({model:view.model});
         }
     });	
