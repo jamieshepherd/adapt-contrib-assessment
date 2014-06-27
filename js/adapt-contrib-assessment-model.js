@@ -245,6 +245,8 @@ define(function(require) {
 
             if(!this.get('_quizCompleteInSession')) this.set({_quizCompleteInSession: true});
 
+            if(!Adapt.course.set('_isAssessmentAttemptComplete')) Adapt.course.set('_isAssessmentAttemptComplete', true);
+
             this.trigger('assessment:complete', {
                 isPass: isPass,
                 score: score,
