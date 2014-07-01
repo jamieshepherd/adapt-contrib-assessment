@@ -6,7 +6,7 @@ define(function(require) {
 
 		initialize: function() {
 			console.log("AssessmentView, initialize",this.model);
-
+			this.model.get('assessmentModel').resetQuizData();
 		},
 
 	})

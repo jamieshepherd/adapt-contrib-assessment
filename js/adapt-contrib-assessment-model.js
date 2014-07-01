@@ -30,8 +30,8 @@ define(function(require) {
                 console.log("assessment child block: " + block.get('_id'));
             })*/
 
-            console.log("quiz complete in session: " + this.get('_quizCompleteInSession'));
-            console.log("reset on revisit: " + this.get('_isResetOnRevisit'));
+            //console.log("quiz complete in session: " + this.get('_quizCompleteInSession'));
+            //console.log("reset on revisit: " + this.get('_isResetOnRevisit'));
             if(this.get('_quizCompleteInSession')  && !this.get('_isResetOnRevisit')){
                 // leave the order as before - previous answers and results will be displayed
                 quizModels = this.get('quizModels');
@@ -228,6 +228,8 @@ define(function(require) {
             var scoreToPass = this.get('_scoreToPass');
             var score = this.getScore();
             var scoreAsPercent = this.getScoreAsPercent();
+            this.set('lastAttemptScoreAsPercent', scoreAsPercent)
+            console.log("scoreAsPercent: " + scoreAsPercent);
             var isPass = false;
 
             this.setFeedbackMessage();
@@ -318,7 +320,7 @@ define(function(require) {
         },    
         
         resetQuizData: function() {
-        	//this.set('_assessment').score = 0;
+        	this.numberOfQuestionsAnswered = 0;
         },
         
         getFeedbackBand: function() {
@@ -328,6 +330,10 @@ define(function(require) {
             for (var i = (bands.length - 1); i >= 0; i--) {
                 if (percent >= bands[i]._score) return bands[i];
             }
+        },
+
+        getLastAttemptScoreAsPercent: function() {
+            return this.get('lastAttemptScoreAsPercent');
         }
 	});
 

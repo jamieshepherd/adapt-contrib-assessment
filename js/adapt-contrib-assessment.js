@@ -8,6 +8,8 @@ define(function(require) {
 	function initQuizData(articleModel) {
 		console.log("assessment, initQuizData: " + articleModel.get('_id'));
 
+		if(typeof Adapt.course.get('_isAssessmentAttemptComplete') === "undefined") Adapt.course.set('_isAssessmentAttemptComplete', false);
+
 		var assessmentModel = new AssessmentModel(articleModel.get('_assessment'));
 		assessmentModel.set('_children', articleModel.getChildren());
 		assessmentModel.set('_allChildModels', articleModel.getChildren().models);
@@ -77,8 +79,7 @@ define(function(require) {
 	Adapt.on('articleView:preRender', function(view) {
 		//console.log("on article preRender: ",view.model);
 		if (view.model.get('_assessment')) {
-			//view.model.resetQuizData();
-            new AssessmentView({model:view.model});
+			new AssessmentView({model:view.model});
         }
     });	
 
@@ -86,7 +87,7 @@ define(function(require) {
 		console.log("assessment.js, on data ready : " + Adapt.articles.length);
 		// assume there can only be a single assessment
 		var assessmentArticle = _.find(Adapt.articles.models, function(article) {
-            return article.get('_assessment');    
+            return article.get('_assessment');
         });
 
         if(assessmentArticle != undefined) initQuizData(assessmentArticle);
