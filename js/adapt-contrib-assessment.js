@@ -24,11 +24,18 @@ define(function(require) {
 			console.log(block.get('_id') +  " - " + block.get('_quizBankID'));
 		});*/
 
-		articleModel.get('assessmentModel').on('assessment:complete', function(data){
+		Adapt.on('assessment:complete', function() {
+			console.log("adapt-contrib-assessment.js, complete");
+			//console.log("articleModel",articleModel);
+			//console.log("assessmentModel",assessmentModel);
+			articleModel.getChildren().models = assessmentModel.setQuizData();
+		});
+
+		/*articleModel.get('assessmentModel').on('assessment:complete', function(data){
 			//console.log("hey I'm article assessment " + this.get('_id') + " and I've just been completed. I should reset my data if _isResetOnRevisit: " + this.get('_isResetOnRevisit'));
 			//console.log("complete in session?: " + this.get('_quizCompleteInSession') + ", is reset on revsit: "+ this.get('_isResetOnRevisit'));
 			articleModel.getChildren().models = assessmentModel.setQuizData();
-		});
+		});*/
 
 		var questionSubsetUsed = articleModel.getChildren().models.length < articleModel.getChildren().length;
 		console.log("questionSubsetUsed: " + questionSubsetUsed);
@@ -77,21 +84,12 @@ define(function(require) {
 
 	Adapt.once('app:dataReady', function() {
 		console.log("assessment.js, on data ready : " + Adapt.articles.length);
-		// assume there can be more than 1 assessment article
-		var assessmentArticles;
-
-		/*_.each(Adapt.articles.models, function(article){
-			console.log(article.get('_id') + " - " + article.get('_assessment'));
-		});*/
-
-
-		assessmentArticles = _.filter(Adapt.articles.models, function(article) {
+		// assume there can only be a single assessment
+		var assessmentArticle = _.find(Adapt.articles.models, function(article) {
             return article.get('_assessment');    
         });
 
-        _.each(assessmentArticles, function(article) {
-        	initQuizData(article);
-        });
+        if(assessmentArticle != undefined) initQuizData(assessmentArticle);
 	});
 
 })

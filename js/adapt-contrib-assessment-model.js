@@ -26,13 +26,9 @@ define(function(require) {
             this.endBlockCount = (_.isNumber(this.get('_endBlockCount'))) ? this.get('_endBlockCount') : 1;
             this.allQuestionBlocks = this.get('_children').slice(this.startBlockCount, this.get('_children').length - this.endBlockCount);
                 
-            console.log("this.allQuestionBlocks.length " + this.allQuestionBlocks.length);
-            console.log("child blocks length: " + this.get('_children').models.length);
-
-
-            _.each(this.get('_children').models, function(block){
+           /* _.each(this.get('_children').models, function(block){
                 console.log("assessment child block: " + block.get('_id'));
-            })
+            })*/
 
             console.log("quiz complete in session: " + this.get('_quizCompleteInSession'));
             console.log("reset on revisit: " + this.get('_isResetOnRevisit'));
@@ -246,14 +242,9 @@ define(function(require) {
             else isPass = (score >= scoreToPass) ? true : false;
 
             if(!this.get('_quizCompleteInSession')) this.set({_quizCompleteInSession: true});
-
-            console.log(Adapt.course.get('_isAssessmentAttemptComplete'));
-            if(!Adapt.course.get('_isAssessmentAttemptComplete')) {
-                console.log("set course _isAssessmentAttemptComplete to true");
-                Adapt.course.set('_isAssessmentAttemptComplete', true) ;
-            }
-
-            this.trigger('assessment:complete', {
+            if(!Adapt.course.get('_isAssessmentAttemptComplete')) Adapt.course.set('_isAssessmentAttemptComplete', true);
+        
+            Adapt.trigger('assessment:complete', {
                 isPass: isPass,
                 score: score,
                 scoreAsPercent: scoreAsPercent,
