@@ -196,8 +196,10 @@ define(function(require) {
             }            
         },
 
-		onQuestionComplete: function() {
-            console.log(this.className +":onQuestionComplete");
+		onQuestionComplete: function(questionView) {
+            console.log(this.className +":onQuestionComplete " + questionView.model.get('_id'));
+            if(questionView.model.findAncestor('articles').get('_id') !== this.get('_id')) return;
+
             this.numberOfQuestionsAnswered++;
            	console.log("this.numberOfQuestionsAnswered: " + this.numberOfQuestionsAnswered);
             console.log("this.questionComponents.length: " + this.questionComponents.length);
@@ -245,7 +247,11 @@ define(function(require) {
 
             if(!this.get('_quizCompleteInSession')) this.set({_quizCompleteInSession: true});
 
-            if(!Adapt.course.set('_isAssessmentAttemptComplete')) Adapt.course.set('_isAssessmentAttemptComplete', true);
+            console.log(Adapt.course.get('_isAssessmentAttemptComplete'));
+            if(!Adapt.course.get('_isAssessmentAttemptComplete')) {
+                console.log("set course _isAssessmentAttemptComplete to true");
+                Adapt.course.set('_isAssessmentAttemptComplete', true) ;
+            }
 
             this.trigger('assessment:complete', {
                 isPass: isPass,
@@ -279,6 +285,7 @@ define(function(require) {
                         _.each(associatedLearningIDs, function(id) {
                             
                             var model = Adapt.findByID(id);
+                            console.log("model",model)
 
                             if (model && model.has('title')) {
                                 var title = model.get('title');
