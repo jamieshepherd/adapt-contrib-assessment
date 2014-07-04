@@ -18,27 +18,12 @@ define(function(require) {
 		articleModel.set({assessmentModel:assessmentModel});
 		articleModel.getChildren().models = assessmentModel.setQuizData();
 
-		//console.log("articleModel.getChildren().length: " + articleModel.getChildren().length);
-		//console.log("articleModel.getChildren().models.length: " + articleModel.getChildren().models.length);
-		/*_.each(articleModel.getChildren().models, function(block){
-			console.log(block.get('_id') +  " - " + block.get('_quizBankID'));
-		});*/
-
 		Adapt.on('assessment:complete', function() {
-			console.log("adapt-contrib-assessment.js, complete");
-			//console.log("articleModel",articleModel);
-			//console.log("assessmentModel",assessmentModel);
+			//console.log("adapt-contrib-assessment.js, complete");
 			articleModel.getChildren().models = assessmentModel.setQuizData();
 		});
 
-		/*articleModel.get('assessmentModel').on('assessment:complete', function(data){
-			//console.log("hey I'm article assessment " + this.get('_id') + " and I've just been completed. I should reset my data if _isResetOnRevisit: " + this.get('_isResetOnRevisit'));
-			//console.log("complete in session?: " + this.get('_quizCompleteInSession') + ", is reset on revsit: "+ this.get('_isResetOnRevisit'));
-			articleModel.getChildren().models = assessmentModel.setQuizData();
-		});*/
-
 		var questionSubsetUsed = articleModel.getChildren().models.length < articleModel.getChildren().length;
-		console.log("questionSubsetUsed: " + questionSubsetUsed);
 		if(questionSubsetUsed) {
 			Adapt.blocks.on('change:_isComplete', onBlockComplete);
 			Adapt.on('assessment:complete', onAssessmentComplete);
@@ -46,20 +31,19 @@ define(function(require) {
 	}
 
 	function onBlockComplete(block) {
-		console.log("assessment.js:onBlockComplete " + block.get('_id'));
+		//console.log("assessment.js:onBlockComplete " + block.get('_id'));
 		if(Adapt.course.get('_isAssessmentAttemptComplete') && !Adapt.course.get('_isComplete')) checkCourseCompletion();
 	}
 
 	function onAssessmentComplete() {
-		console.log("assessment.js:onAssessmentComplete");
+		//console.log("assessment.js:onAssessmentComplete");
 		if (!Adapt.course.get('_isComplete')) checkCourseCompletion();
 	}
 
 	function checkCourseCompletion() {
-		console.log("assessment.js, checkCourseCompletion");
+		//console.log("assessment.js, checkCourseCompletion");
 		// if the assessment is complete, and all non-assessment blocks are complete - then all course content has been viewed - set course to complete
 		var allNonAssessmentBlocksComplete = getAllNonAssessmentBlocksComplete();
-		console.log("allNonAssessmentBlocksComplete: " + allNonAssessmentBlocksComplete);
 		if(allNonAssessmentBlocksComplete) Adapt.course.set('_isComplete', true);
 	}
 
@@ -67,7 +51,7 @@ define(function(require) {
 	 	var allComplete = true;
       _.each(Adapt.blocks.models, function(model) {
             var isPartOfAssessment = (model.getParent().get('_assessment') != undefined);
-            console.log(model.get('_id') + " - " + model.get('_isComplete') + " - " + isPartOfAssessment);
+            //console.log(model.get('_id') + " - " + model.get('_isComplete') + " - " + isPartOfAssessment);
             if(!model.get('_isComplete') && !isPartOfAssessment) allComplete = false;                   
         }, this);
 

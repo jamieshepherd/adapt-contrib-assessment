@@ -8,7 +8,7 @@ define(function(require) {
     QuestionBank.prototype = {
         
         initialise: function(id, numQuestionBlocks){
-            console.log('QuestionBank.initialize: ' + id + " - " + numQuestionBlocks); 
+            //console.log('QuestionBank.initialize: ' + id + " - " + numQuestionBlocks); 
             this._id = id;
             this._numQuestionBlocks = numQuestionBlocks; 
             this.questionBlocks = [];
@@ -20,7 +20,7 @@ define(function(require) {
         },
         
         addBlock: function(block){
-            console.log("QuestionBank::addBlock " + block.get('_id') + " added to Bank ID: " + this._id);  
+            //console.log("QuestionBank::addBlock " + block.get('_id') + " added to Bank ID: " + this._id);  
             this.questionBlocks.push(block);    
         },
         
@@ -28,7 +28,7 @@ define(function(require) {
             
             var questionBlocks = [];
             
-            console.log("getRandomQuestionBlocks: " + this._id +  " - " + this._numQuestionBlocks);
+            //console.log("getRandomQuestionBlocks: " + this._id +  " - " + this._numQuestionBlocks);
             for (var i = 0; i < this._numQuestionBlocks; i++) {
                 var question = this.getRandomQuestion();
                 if (question !== undefined) questionBlocks.push(question);
