@@ -14,9 +14,7 @@ define(function(require) {
 		assessmentModel.set('_children', articleModel.getChildren());
 		assessmentModel.set('_allChildModels', articleModel.getChildren().models);
 		assessmentModel.set('_id', articleModel.get('_id'));
-		// GM - can this be moved to _assessment object?
-		assessmentModel.set('_canShowFeedback', articleModel.get('_canShowFeedback'));
-
+		
 		articleModel.set({assessmentModel:assessmentModel});
 		articleModel.getChildren().models = assessmentModel.setQuizData();
 
@@ -78,16 +76,15 @@ define(function(require) {
 
 	Adapt.on('articleView:preRender', function(view) {
 		//console.log("on article preRender: ",view.model);
-		if (view.model.get('_assessment')) {
+		if (view.model.get('_assessment') && view.model.get('_assessment')._isEnabled) {
 			new AssessmentView({model:view.model});
         }
     });	
 
 	Adapt.once('app:dataReady', function() {
-		console.log("assessment.js, on data ready : " + Adapt.articles.length);
-		// assume there can only be a single assessment
+		// big assumption that there can only be a single assessment
 		var assessmentArticle = _.find(Adapt.articles.models, function(article) {
-            return article.get('_assessment');
+            return (article.get('_assessment') && article.get('_assessment')._isEnabled);
         });
 
         if(assessmentArticle != undefined) initQuizData(assessmentArticle);

@@ -26,9 +26,9 @@ define(function(require) {
             this.endBlockCount = (_.isNumber(this.get('_endBlockCount'))) ? this.get('_endBlockCount') : 1;
             this.allQuestionBlocks = this.get('_children').slice(this.startBlockCount, this.get('_children').length - this.endBlockCount);
                 
-           /* _.each(this.get('_children').models, function(block){
+            _.each(this.get('_children').models, function(block){
                 console.log("assessment child block: " + block.get('_id'));
-            })*/
+            })
 
             //console.log("quiz complete in session: " + this.get('_quizCompleteInSession'));
             //console.log("reset on revisit: " + this.get('_isResetOnRevisit'));
@@ -211,6 +211,10 @@ define(function(require) {
                allChildComponents = allChildComponents.concat(block.getChildren().models);
             });
 
+            console.log(allChildComponents.toString());
+            _.each(allChildComponents, function(component){
+                console.log(component.get('_id'));
+            })
             return allChildComponents;
         },
 
@@ -229,7 +233,7 @@ define(function(require) {
             var score = this.getScore();
             var scoreAsPercent = this.getScoreAsPercent();
             this.set('lastAttemptScoreAsPercent', scoreAsPercent)
-            console.log("scoreAsPercent: " + scoreAsPercent);
+            //console.log("scoreAsPercent: " + scoreAsPercent);
             var isPass = false;
 
             this.setFeedbackMessage();
