@@ -7,38 +7,45 @@ A [sample JSON](https://github.com/cgkineo/adapt-contrib-assessment/blob/master/
 
 ```json
 "_assessment": {
+    "_isEnabled":true,
+    "_isResetOnRevisit": true,
+    "_canShowFeedback": false,
     "_startBlockCount": 0,
     "_endBlockCount": 1,
-    "_banks":{
-        "_isEnabled": true,
-        "_split": "1,2,1"
+    "_banks": {
+        "_isEnabled": false,
+        "_split": "2,2"
     },
     "_randomisation": {
         "_isEnabled": true,
         "_blockCount": 4
     },
     "_isPercentageBased" : true,
-    "_scoreToPass" : 60,
+    "_scoreToPass" : 75,
     "_completionMessage" : {
         "title" : "You have finished the assessment",
-        "message": "You have scored [SCORE] out of [MAXSCORE].  [FEEDBACK]"
+        "message": "You scored [SCORE] out of [MAXSCORE].  [FEEDBACK]"
     },
     "_bands": [
         {
             "_score": 0,
-            "feedback": "You must try harder"
+            "feedback": "Your score was below 25%. Why not have another try? Below is a list of areas you might want to study first.",
+            "_showAssociatedLearning": true
         },
         {
             "_score": 25,
-            "feedback": "I think you can do better than this"
+            "feedback": "Your score was below 50%. Why not have another try? Below is a list of areas you might want to study first.",
+            "_showAssociatedLearning": true
         },
         {
             "_score": 50,
-            "feedback": "Good effort, you're getting there..."
+            "feedback": "Good effort, but you're score was under 75%. Let's try again? Below is a list of areas you might want to study first.",
+            "_showAssociatedLearning": true
         },
         {
             "_score": 75,
-            "feedback": "Excellent!"
+            "feedback": "Great work. You passed the assessment article quiz.",
+            "_showAssociatedLearning": false
         }
     ]
 }
@@ -48,6 +55,9 @@ A description of attributes is as follows:
 
 | Attribute        | Type| Description|
 | :------------ |:-------------|:-----|
+| _isEnabled  | Boolean   | Set to true to switch the assessment on
+| _isResetOnRevisit  | Boolean   | Whether or not the user is given more than a single attempt at the quiz in a session
+| _canShowFeedback  | Boolean   | Whether or not question components in the assesment display feedback
 | _startBlockCount  | int   | Number of blocks appear in order at the start of the quiz, before question blocks are randomised or put into banks. Typically used for showing initial presentation blocks |
 | _endBlockCount    | int   | Number of blocks appear at the end of the quiz, after randomised or banked question blocks |
 | _banks    |  object |  Set "_isEnabled" (bool) to true to put question blocks into banks. "_split" (String) sets the split across banks e.g. "1,2,1" will pull 1 from bank 1, 2 from bank 2, 1 from bank 3, Quiz blocks in blocks.json have a "_quizBankID" property e.g. "_quizBankID": 1 |
@@ -81,19 +91,6 @@ A description of attributes is as follows:
                 <tr>
                     <td>scoreAsPercent</td>
                     <td>int</td>
-                </tr>
-            </table>
-        
-        </td>        
-    </tr>
-    <tr valign="top">
-        <td><i>adapt:modelUpdated</i></td>
-        <td>Triggered when the page model has been updated - after blocks randomisation or question block banking</td>
-        <td>
-            <table>
-                <tr>
-                    <td>currentPage</td>
-                    <td>ContentObjectModel</td>
                 </tr>
             </table>
         
