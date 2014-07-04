@@ -92,6 +92,14 @@ A description of attributes is as follows:
                     <td>scoreAsPercent</td>
                     <td>int</td>
                 </tr>
+                <tr>
+                    <td>feedbackMessage</td>
+                    <td>String</td>
+                </tr>
+                <tr>
+                    <td>associatedLearning</td>
+                    <td>Array</td>
+                </tr>
             </table>
         
         </td>        
