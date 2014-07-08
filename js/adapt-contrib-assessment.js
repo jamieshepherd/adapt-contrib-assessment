@@ -1,3 +1,9 @@
+/*
+* adapt-contrib-assessment
+* License - https://github.com/cgkineo/adapt-contrib-assessment/LICENSE
+* Maintainers - Gavin McMaster <gavin.mcmaster@kineo.com>
+*/
+
 define(function(require) {
 
 	var Adapt = require('coreJS/adapt');
