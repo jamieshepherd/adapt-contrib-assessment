@@ -20,6 +20,7 @@ define(function(require) {
 
 		Adapt.on('assessment:complete', function() {
 			//console.log("adapt-contrib-assessment.js, complete");
+			if(!articleModel.get('_isComplete')) articleModel.set('_isComplete', true);
 			articleModel.set({assessmentModel:assessmentModel});
 			articleModel.getChildren().models = assessmentModel.setQuizData();				
 		});
