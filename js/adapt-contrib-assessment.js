@@ -20,7 +20,8 @@ define(function(require) {
 
 		Adapt.on('assessment:complete', function() {
 			//console.log("adapt-contrib-assessment.js, complete");
-			articleModel.getChildren().models = assessmentModel.setQuizData();
+			articleModel.set({assessmentModel:assessmentModel});
+			articleModel.getChildren().models = assessmentModel.setQuizData();				
 		});
 
 		var questionSubsetUsed = articleModel.getChildren().models.length < articleModel.getChildren().length;

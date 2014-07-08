@@ -10,6 +10,7 @@ define(function(require) {
 
 		initialize: function() {
 			this.listenTo(Adapt, 'questionView:complete', this.onQuestionComplete);
+            this.set('_quizCompleteInSession', false);
 		},
 
 		setQuizData: function() {
@@ -39,12 +40,12 @@ define(function(require) {
                 this.setAllBlocksUnavailable();
                	this.populateQuestionBanks();
                 quizModels = this.buildBankedQuiz();
-                this.setFilteredBlocksAvailable();
+                this.setFilteredBlocksAvailable(quizModels);
             }
             else if(this.get('_randomisation') && this.get('_randomisation')._isEnabled) {
                 this.setAllBlocksUnavailable();
                 quizModels = this.setupRandomisation();
-                this.setFilteredBlocksAvailable();
+                this.setFilteredBlocksAvailable(quizModels);
             }
             else {
             	quizModels = this.get('_children').models;
@@ -101,8 +102,8 @@ define(function(require) {
             });
         },
 
-        setFilteredBlocksAvailable: function() {
-             _.each(this.get('_children').models, function(block){
+        setFilteredBlocksAvailable: function(quizModels) {
+            _.each(quizModels, function(block){
                 block.set('_isAvailable', true, {pluginName: '_assessment'});                
              })
         },
@@ -127,7 +128,7 @@ define(function(require) {
         },
 
         populateQuestionBanks: function() {        
-            console.log(this.className + ":populateQuestionBanks " + this.allQuestionBlocks.length);
+            //console.log(this.className + ":populateQuestionBanks " + this.allQuestionBlocks.length);
 
             _.each(this.allQuestionBlocks, _.bind(function(questionBlock){
                 var bankID = questionBlock.get('_quizBankID');
@@ -137,7 +138,7 @@ define(function(require) {
         },
 
         getBankByID: function(id) {
-            console.log(this.className + ":getBankByID: " + id);
+            //console.log(this.className + ":getBankByID: " + id);
             for(var i=0;i<this.questionBanks.length;i++){
                 var qb = this.questionBanks[i];
                 if(id===qb.getID()) return qb;
@@ -145,7 +146,7 @@ define(function(require) {
         },
 
 		onQuestionComplete: function(questionView) {
-            console.log(this.className +":onQuestionComplete " + questionView.model.get('_id'));
+            //console.log(this.className +":onQuestionComplete " + questionView.model.get('_id'));
             if(questionView.model.findAncestor('articles').get('_id') !== this.get('_id')) return;
 
             this.numberOfQuestionsAnswered++;
@@ -160,7 +161,7 @@ define(function(require) {
             _.each(this.get('quizModels'), function(block) {
                allChildComponents = allChildComponents.concat(block.getChildren().models);
             });
-            
+
             return allChildComponents;
         },
 
@@ -225,8 +226,7 @@ define(function(require) {
                         _.each(associatedLearningIDs, function(id) {
                             
                             var model = Adapt.findByID(id);
-                            console.log("model",model)
-
+                            
                             if (model && model.has('title')) {
                                 var title = model.get('title');
 
