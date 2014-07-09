@@ -225,7 +225,7 @@ define(function(require) {
                     if (component.get('_isComplete') && !component.get('_isCorrect') && associatedLearningIDs.length > 0) {                    
                         _.each(associatedLearningIDs, function(id) {
                             
-                            var model = Adapt.findByID(id);
+                            var model = Adapt.findById(id);
                             
                             if (model && model.has('title')) {
                                 var title = model.get('title');
