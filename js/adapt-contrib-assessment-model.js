@@ -111,7 +111,7 @@ define(function(require) {
         overrideLockedAttributes: function() {
             _.each(this.questionComponents, _.bind(function(component) {
                 component.set({
-                    '_isEnabledOnRevisit': this.get('_isResetOnRevisit') || (!this.get('_quizCompleteInSession')),
+                    '_isResetOnRevisit': this.get('_isResetOnRevisit') || (!this.get('_quizCompleteInSession')),
                     '_canShowFeedback': this.get('_canShowFeedback')
                 }, { pluginName: "_assessment" });
             }, this));
@@ -124,7 +124,7 @@ define(function(require) {
 
             var componentsCollection = new Backbone.Collection(this.allChildComponents);
             var results = componentsCollection.findWhere({_component: "results"});
-            if(results) results.set({'_isEnabledOnRevisit': this.get('_isResetOnRevisit')}, {pluginName:"_assessment"});
+            if(results) results.set({'_isResetOnRevisit': this.get('_isResetOnRevisit')}, {pluginName:"_assessment"});
         },
 
         populateQuestionBanks: function() {        
