@@ -61,7 +61,8 @@ define(function(require) {
     }
 
 	Adapt.on('articleView:preRender', function(view) {
-		//console.log("on article preRender: ",view.model);
+		if(!view.model.get('_isComplete') && Adapt.course.get('_isAssessmentAttemptComplete')) view.model.set('_isComplete', true);
+
 		if (view.model.get('_assessment') && view.model.get('_assessment')._isEnabled) {
 			new AssessmentView({model:view.model});
         }
