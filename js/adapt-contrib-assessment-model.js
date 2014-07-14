@@ -56,6 +56,8 @@ define(function(require) {
             this.questionComponents = this.getQuestionComponents();
             this.overrideLockedAttributes();
 
+            Adapt.trigger("assessment:quizSet", this.getQuestionModel());
+
             return quizModels;
 		},
 
@@ -171,37 +173,70 @@ define(function(require) {
             });
         },
 
-        onQuizComplete: function() { 
-            //console.log(this.className + "::onQuizComplete");
-            
+
+        getQuestionModel: function() {
             var isPercentageBased = this.get('_isPercentageBased');
             var scoreToPass = this.get('_scoreToPass');
             var score = this.getScore();
             var scoreAsPercent = this.getScoreAsPercent();
-            this.set('lastAttemptScoreAsPercent', scoreAsPercent)
+            
             var isPass = false;
+
+            if (isPercentageBased) isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
+            else isPass = (score >= scoreToPass) ? true : false;
+
+            //section for learnerassistant
+            var allQuestions = {};
+            _.each(this.getQuestionComponents(), function(item, index) {
+                //make array of questionModels
+                var questionModel = {
+                    _isCorrect: item.get("_isCorrect"),
+                    title: item.get("title"),
+                    _id: item.get("_id"),
+                    _associatedLearning: _.clone(item.get("_associatedLearning"))
+                };
+                //convert associatedlearning id array to element data object array
+                if (typeof questionModel._associatedLearning !== "undefined") {
+                    for (var al = 0; al < questionModel._associatedLearning.length; al++) {
+                        var assoc =  Adapt.findByID(questionModel._associatedLearning[al]).toJSON();
+                        questionModel._associatedLearning[al] = {
+                            _id: assoc._id,
+                            title: assoc.title
+                        };
+                    }
+                } else questionModel._associatedLearning = [];
+                allQuestions[questionModel._id] = questionModel;
+            });
+            //end of learnerassistant
+
+            return  {
+                isPercentageBased: isPercentageBased,
+                isPass: isPass,
+                score: score,
+                scoreAsPercent: scoreAsPercent,
+                feedbackMessage: this.get('feedbackMessage'),
+                associatedLearning: this.get('_associatedLearning'),
+                allQuestions: allQuestions //addition for learnerassistant
+            };
+        },
+
+
+        onQuizComplete: function() { 
+            var questionModel = this.getQuestionModel();
+
+            this.set('lastAttemptScoreAsPercent', questionModel.scoreAsPercent)
 
             this.setFeedbackMessage();
             if(this.getFeedbackBand()._showAssociatedLearning) this.setAssociatedLearning();
             
             this.set({
                 'feedbackTitle': this.get('_completionMessage').title, 
-                'score': isPercentageBased ? scoreAsPercent + '%' : score
+                'score': questionModel.isPercentageBased ? questionModel.scoreAsPercent + '%' : score
             });
-
-            if (isPercentageBased) isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
-            else isPass = (score >= scoreToPass) ? true : false;
-
             if(!this.get('_quizCompleteInSession')) this.set({_quizCompleteInSession: true});
             if(!Adapt.course.get('_isAssessmentAttemptComplete')) Adapt.course.set('_isAssessmentAttemptComplete', true);
         
-            Adapt.trigger('assessment:complete', {
-                isPass: isPass,
-                score: score,
-                scoreAsPercent: scoreAsPercent,
-                feedbackMessage: this.get('feedbackMessage'),
-                associatedLearning: this.get('_associatedLearning')
-            });
+            Adapt.trigger('assessment:complete', this.getQuestionModel());
         },
 
         setFeedbackMessage: function() {
@@ -268,6 +303,7 @@ define(function(require) {
         
         resetQuizData: function() {
         	this.numberOfQuestionsAnswered = 0;
+            Adapt.trigger("assessment:quizReset", this.getQuestionModel());
         },
         
         getFeedbackBand: function() {
