@@ -185,9 +185,14 @@ define(function(require) {
 
             //section for learnerassistant
             var allQuestions = {};
+            var allBanks = {};
             _.each(this.getQuestionComponents(), function(item, index) {
+
+                var parent = Adapt.findById(item.get("_parentId"));
+
                 //make array of questionModels
                 var questionModel = {
+                    _quizBankID: parent.get('_quizBankID'),
                     _isCorrect: item.get("_isCorrect"),
                     title: item.get("title"),
                     _id: item.get("_id"),
@@ -204,6 +209,8 @@ define(function(require) {
                     }
                 } else questionModel._associatedLearning = [];
                 allQuestions[questionModel._id] = questionModel;
+                if (!allBanks[questionModel._quizBankID]) allBanks[questionModel._quizBankID] = { allQuestions: {}, _quizBankID: questionModel._quizBankID };
+                allBanks[questionModel._quizBankID].allQuestions[questionModel._id] = questionModel;
             });
             //end of learnerassistant
 
@@ -214,7 +221,8 @@ define(function(require) {
                 scoreAsPercent: scoreAsPercent,
                 feedbackMessage: this.get('feedbackMessage'),
                 associatedLearning: this.get('_associatedLearning'),
-                allQuestions: allQuestions //addition for learnerassistant
+                allQuestions: allQuestions, //addition for learnerassistant
+                allBanks: allBanks
             };
         },
 
