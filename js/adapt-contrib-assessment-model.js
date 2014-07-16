@@ -56,8 +56,6 @@ define(function(require) {
             this.questionComponents = this.getQuestionComponents();
             this.overrideLockedAttributes();
 
-            Adapt.trigger("assessment:quizSet", this.getQuestionModel());
-
             return quizModels;
 		},
 
@@ -113,7 +111,7 @@ define(function(require) {
         overrideLockedAttributes: function() {
             _.each(this.questionComponents, _.bind(function(component) {
                 component.set({
-                    '_isEnabledOnRevisit': this.get('_isResetOnRevisit') || (!this.get('_quizCompleteInSession')),
+                    '_isResetOnRevisit': this.get('_isResetOnRevisit') || (!this.get('_quizCompleteInSession')),
                     '_canShowFeedback': this.get('_canShowFeedback')
                 }, { pluginName: "_assessment" });
             }, this));
@@ -126,7 +124,7 @@ define(function(require) {
 
             var componentsCollection = new Backbone.Collection(this.allChildComponents);
             var results = componentsCollection.findWhere({_component: "results"});
-            if(results) results.set({'_isEnabledOnRevisit': this.get('_isResetOnRevisit')}, {pluginName:"_assessment"});
+            if(results) results.set({'_isResetOnRevisit': this.get('_isResetOnRevisit')}, {pluginName:"_assessment"});
         },
 
         populateQuestionBanks: function() {        
@@ -198,7 +196,7 @@ define(function(require) {
                 //convert associatedlearning id array to element data object array
                 if (typeof questionModel._associatedLearning !== "undefined") {
                     for (var al = 0; al < questionModel._associatedLearning.length; al++) {
-                        var assoc =  Adapt.findByID(questionModel._associatedLearning[al]).toJSON();
+                        var assoc =  Adapt.findById(questionModel._associatedLearning[al]).toJSON();
                         questionModel._associatedLearning[al] = {
                             _id: assoc._id,
                             title: assoc.title
@@ -260,7 +258,7 @@ define(function(require) {
                     if (component.get('_isComplete') && !component.get('_isCorrect') && associatedLearningIDs.length > 0) {                    
                         _.each(associatedLearningIDs, function(id) {
                             
-                            var model = Adapt.findByID(id);
+                            var model = Adapt.findById(id);
                             
                             if (model && model.has('title')) {
                                 var title = model.get('title');
@@ -303,7 +301,6 @@ define(function(require) {
         
         resetQuizData: function() {
         	this.numberOfQuestionsAnswered = 0;
-            Adapt.trigger("assessment:quizReset", this.getQuestionModel());
         },
         
         getFeedbackBand: function() {
