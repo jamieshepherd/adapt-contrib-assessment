@@ -4,6 +4,11 @@
     "_canShowFeedback": false,
     "_startBlockCount": 0,
     "_endBlockCount": 1,
+     "_assessmentPageLevelProgress": {
+        "_incrementalMarking": true,
+        "_showMarking": true,
+        "_showProgress": true
+    },
     "_banks": {
         "_isEnabled": false,
         "_split": "2,2"
