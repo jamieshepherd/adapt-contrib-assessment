@@ -9,12 +9,11 @@ define(function(require) {
 		className: "AssessmentModel",
 
 		initialize: function() {
-			this.listenTo(Adapt, 'questionView:complete', this.onQuestionComplete);
-            this.set('_quizCompleteInSession', false);
+	       this.set('_quizCompleteInSession', false);
 		},
 
 		setQuizData: function() {
-			//console.log(this.className +":setQuizData");
+			console.log(this.className +":setQuizData");
 			this.questionBanks = [];
             this.allQuestionBlocks = [];
             this.numberOfQuestionsAnswered = 0;
@@ -54,6 +53,7 @@ define(function(require) {
             this.set({quizModels:quizModels});
             this.allChildComponents = this.getAllChildComponents();
             this.questionComponents = this.getQuestionComponents();
+            this.setupQuestionListeners();
             this.overrideLockedAttributes();
 
             return quizModels;
@@ -78,7 +78,7 @@ define(function(require) {
         },
 
          setupRandomisation: function() {
-            //console.log(this.className + ":setupRandomisation");
+            console.log(this.className + ":setupRandomisation");
 
             var randomisationModel = this.get('_randomisation');
             var blockModels = this.get('_children').models;
@@ -94,6 +94,22 @@ define(function(require) {
             bankedModels = startModels.concat(questionModels).concat(endModels);
             
             return bankedModels;
+        },
+
+        setupQuestionListeners: function() {
+            //console.log("setupQuestionListeners: " + this.questionComponents.length);
+            var questionCollection = new Backbone.Collection(this.questionComponents);
+            questionCollection.each(function(question) {
+               this.listenTo(question, 'change:_isInteractionsComplete', this.checkQuestionCompleted);
+            }, this);
+        },
+
+        removeQuestionListeners: function() {
+            //console.log("removeQuestionListeners: " + this.questionComponents.length);
+            var questionCollection = new Backbone.Collection(this.questionComponents);
+            questionCollection.each(function(question) {
+               this.stopListening(question, 'change:_isInteractionsComplete', this.checkQuestionCompleted);
+            }, this);
         },
 
 		setAllBlocksUnavailable: function() {
@@ -145,14 +161,15 @@ define(function(require) {
             }            
         },
 
-		onQuestionComplete: function(questionView) {
-            //console.log(this.className +":onQuestionComplete " + questionView.model.get('_id'));
-            if(questionView.model.findAncestor('articles').get('_id') !== this.get('_id')) return;
-
+	    checkQuestionCompleted: function(questionModel) {
+            if(!questionModel.get('_isInteractionsComplete')) return;
+            //console.log("assessment-model, onQuestionCompleted: " + questionModel.get('_id'));
+            
             this.numberOfQuestionsAnswered++;
+            console.log(this.numberOfQuestionsAnswered + " - " + this.questionComponents.length);
             if(this.numberOfQuestionsAnswered >= this.questionComponents.length) {
                 this.onQuizComplete();
-            }    
+            }
         },
 
         getAllChildComponents: function() {
@@ -167,7 +184,7 @@ define(function(require) {
 
          getQuestionComponents: function() {            
             return _.filter(this.allChildComponents, function(componentModel) { 
-                if (componentModel.get('_questionWeight')) return componentModel; 
+                if (componentModel.get('_isQuestionType')) return componentModel; 
             });
         },
 
@@ -226,10 +243,11 @@ define(function(require) {
             };
         },
 
-
         onQuizComplete: function() { 
+            console.log("assessment-model onQuizComplete");
             var questionModel = this.getQuestionModel();
 
+            // picked up by assessment versions of menus
             this.set('lastAttemptScoreAsPercent', questionModel.scoreAsPercent)
 
             this.setFeedbackMessage();
@@ -242,6 +260,8 @@ define(function(require) {
             if(!this.get('_quizCompleteInSession')) this.set({_quizCompleteInSession: true});
             if(!Adapt.course.get('_isAssessmentAttemptComplete')) Adapt.course.set('_isAssessmentAttemptComplete', true);
         
+            this.removeQuestionListeners();
+
             Adapt.trigger('assessment:complete', this.getQuestionModel());
         },
 
