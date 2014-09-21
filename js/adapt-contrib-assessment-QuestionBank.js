@@ -1,13 +1,13 @@
 define(function(require) {
     
-   var QuestionBank = function(id, numQuestionBlocks){
+   var QuestionBank = function(id, numQuestionBlocks) {
     
         this.initialise(id, numQuestionBlocks);
     };
 
     QuestionBank.prototype = {
         
-        initialise: function(id, numQuestionBlocks){
+        initialise: function(id, numQuestionBlocks) {
             //console.log('QuestionBank.initialize: ' + id + " - " + numQuestionBlocks); 
             this._id = id;
             this._numQuestionBlocks = numQuestionBlocks; 
@@ -15,16 +15,16 @@ define(function(require) {
             this.unUsedQuestionBlocks = undefined;
         },
         
-        getID: function(){ 
+        getID: function() { 
             return this._id; 
         },
         
-        addBlock: function(block){
+        addBlock: function(block) {
             //console.log("QuestionBank::addBlock " + block.get('_id') + " added to Bank ID: " + this._id);  
             this.questionBlocks.push(block);    
         },
         
-       getRandomQuestionBlocks: function(){
+       getRandomQuestionBlocks: function() {
             
             var questionBlocks = [];
             
@@ -37,7 +37,7 @@ define(function(require) {
             return questionBlocks;
         },
         
-        getRandomQuestion: function(){          
+        getRandomQuestion: function() {          
             if (this.unUsedQuestionBlocks === undefined) {
                 this.unUsedQuestionBlocks = this.questionBlocks.slice(0);
             }        

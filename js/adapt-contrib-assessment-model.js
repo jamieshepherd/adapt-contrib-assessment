@@ -25,14 +25,14 @@ define(function(require) {
             this.endBlockCount = (_.isNumber(this.get('_endBlockCount'))) ? this.get('_endBlockCount') : 1;
             this.allQuestionBlocks = this.get('_children').slice(this.startBlockCount, this.get('_children').length - this.endBlockCount);
                 
-            if(this.get('_quizCompleteInSession')  && !this.get('_isResetOnRevisit')){
+            if(this.get('_quizCompleteInSession')  && !this.get('_isResetOnRevisit')) {
                 // leave the order as before - previous answers and results will be displayed
                 quizModels = this.get('quizModels');
             }
-            else if(this.get('_banks') && this.get('_banks')._isEnabled && this.get('_banks')._split.length > 1){
+            else if(this.get('_banks') && this.get('_banks')._isEnabled && this.get('_banks')._split.length > 1) {
                 var banks = this.get('_banks')._split.split(",");
                            
-                _.each(banks, _.bind(function(bank, index){
+                _.each(banks, _.bind(function(bank, index) {
                     this.questionBanks.push(new QuestionBank((index+1), bank));  
                 },this));
 
@@ -66,7 +66,7 @@ define(function(require) {
             var questionModels = [];
             var bankedModels;
              
-            _.each(this.questionBanks, function(questionBank){
+            _.each(this.questionBanks, function(questionBank) {
                 var questions = questionBank.getRandomQuestionBlocks();
                 questionModels = questionModels.concat(questions);
             })
@@ -88,7 +88,8 @@ define(function(require) {
             var numberOfQuestionBlocks = blockModels.length - this.endBlockCount;
             var questionModels = _.shuffle(blockModels.slice(this.startBlockCount, numberOfQuestionBlocks));
             var endModels = blockModels.slice(numberOfQuestionBlocks);
-            var randomCount = this.validateRandomCount(randomisationModel._blockCount, numberOfQuestionBlocks) ? randomisationModel._blockCount : numberOfQuestionBlocks;
+            var randomCount = this.validateRandomCount(randomisationModel._blockCount, numberOfQuestionBlocks)
+                    ? randomisationModel._blockCount : numberOfQuestionBlocks;
 
             questionModels = questionModels.slice(0, randomCount);
             bankedModels = startModels.concat(questionModels).concat(endModels);
@@ -113,13 +114,13 @@ define(function(require) {
         },
 
 		setAllBlocksUnavailable: function() {
-            _.each(this.get('_children').models, function(block){
+            _.each(this.get('_children').models, function(block) {
                 block.set('_isAvailable', false, {pluginName: '_assessment'});
             });
         },
 
         setFilteredBlocksAvailable: function(quizModels) {
-            _.each(quizModels, function(block){
+            _.each(quizModels, function(block) {
                 block.set('_isAvailable', true, {pluginName: '_assessment'});                
              })
         },
@@ -134,13 +135,15 @@ define(function(require) {
 
             var childComponentModels = [];
                        
-            _.each(this.get('_children').models, function(block){
+            _.each(this.get('_children').models, function(block) {
                childComponentModels = childComponentModels.concat(block.getChildren().models);
             }); 
 
             var componentsCollection = new Backbone.Collection(this.allChildComponents);
-            var results = componentsCollection.findWhere({_component: "results"});
-            if(results) results.set({'_isResetOnRevisit': this.get('_isResetOnRevisit')}, {pluginName:"_assessment"});
+            var hasResultsComponent = componentsCollection.findWhere({_component: "results"});
+            if(hasResultsComponent) {
+                hasResults.set({'_isResetOnRevisit': this.get('_isResetOnRevisit')}, {pluginName:"_assessment"});  
+            } 
         },
 
         populateQuestionBanks: function() {        
@@ -167,7 +170,8 @@ define(function(require) {
             
             this.numberOfQuestionsAnswered++;
             console.log(this.numberOfQuestionsAnswered + " - " + this.questionComponents.length);
-            if(this.numberOfQuestionsAnswered >= this.questionComponents.length) {
+            var allQuestionsAnswered = this.numberOfQuestionsAnswered >= this.questionComponents.length;
+            if(allQuestionsAnswered) {
                 this.onQuizComplete();
             }
         },
@@ -200,7 +204,7 @@ define(function(require) {
             if (isPercentageBased) isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
             else isPass = (score >= scoreToPass) ? true : false;
 
-            //section for learnerassistant
+            //section for learnerassistant data
             var allQuestions = {};
             var allBanks = {};
             _.each(this.getQuestionComponents(), function(item, index) {
@@ -215,6 +219,7 @@ define(function(require) {
                     _id: item.get("_id"),
                     _associatedLearning: _.clone(item.get("_associatedLearning"))
                 };
+
                 //convert associatedlearning id array to element data object array
                 if (typeof questionModel._associatedLearning !== "undefined") {
                     for (var al = 0; al < questionModel._associatedLearning.length; al++) {
@@ -224,12 +229,17 @@ define(function(require) {
                             title: assoc.title
                         };
                     }
-                } else questionModel._associatedLearning = [];
+                } 
+                else {
+                    questionModel._associatedLearning = [];  
+                } 
                 allQuestions[questionModel._id] = questionModel;
-                if (!allBanks[questionModel._quizBankID]) allBanks[questionModel._quizBankID] = { allQuestions: {}, _quizBankID: questionModel._quizBankID };
+                if (!allBanks[questionModel._quizBankID]) {
+                    allBanks[questionModel._quizBankID] = { allQuestions: {}, _quizBankID: questionModel._quizBankID };
+                }
                 allBanks[questionModel._quizBankID].allQuestions[questionModel._id] = questionModel;
             });
-            //end of learnerassistant
+            //end of learnerassistant data
 
             return  {
                 isPercentageBased: isPercentageBased,
@@ -251,14 +261,20 @@ define(function(require) {
             this.set('lastAttemptScoreAsPercent', questionModel.scoreAsPercent)
 
             this.setFeedbackMessage();
-            if(this.getFeedbackBand()._showAssociatedLearning) this.setAssociatedLearning();
+            if(this.getFeedbackBand()._showAssociatedLearning) {
+                this.setAssociatedLearning();
+            }
             
             this.set({
                 'feedbackTitle': this.get('_completionMessage').title, 
                 'score': questionModel.isPercentageBased ? questionModel.scoreAsPercent + '%' : score
             });
-            if(!this.get('_quizCompleteInSession')) this.set({_quizCompleteInSession: true});
-            if(!Adapt.course.get('_isAssessmentAttemptComplete')) Adapt.course.set('_isAssessmentAttemptComplete', true);
+            if(!this.get('_quizCompleteInSession')) {
+                this.set({_quizCompleteInSession: true});
+            }
+            if(!Adapt.course.get('_isAssessmentAttemptComplete')) {
+                Adapt.course.set('_isAssessmentAttemptComplete', true);
+            }
         
             this.removeQuestionListeners();
 
