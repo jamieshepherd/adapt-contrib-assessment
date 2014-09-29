@@ -140,9 +140,9 @@ define(function(require) {
             }); 
 
             var componentsCollection = new Backbone.Collection(this.allChildComponents);
-            var hasResultsComponent = componentsCollection.findWhere({_component: "results"});
-            if(hasResultsComponent) {
-                hasResults.set({'_isResetOnRevisit': this.get('_isResetOnRevisit')}, {pluginName:"_assessment"});  
+            var resultsComponent = componentsCollection.findWhere({_component: "results"});
+            if(resultsComponent) {
+                resultsComponent.set({'_isResetOnRevisit': this.get('_isResetOnRevisit')}, {pluginName:"_assessment"});  
             } 
         },
 
@@ -152,6 +152,7 @@ define(function(require) {
             _.each(this.allQuestionBlocks, _.bind(function(questionBlock){
                 var bankID = questionBlock.get('_quizBankID');
                 var questionBank = this.getBankByID(bankID);
+                console.log("questionBank",questionBank);
                 questionBank.addBlock(questionBlock); 
             }, this));
         },
@@ -160,8 +161,10 @@ define(function(require) {
             //console.log(this.className + ":getBankByID: " + id);
             for(var i=0;i<this.questionBanks.length;i++){
                 var qb = this.questionBanks[i];
-                if(id===qb.getID()) return qb;
-            }            
+                if(id===qb.getID()) {
+                    return qb;
+                }
+            }      
         },
 
 	    checkQuestionCompleted: function(questionModel) {
@@ -169,7 +172,7 @@ define(function(require) {
             //console.log("assessment-model, onQuestionCompleted: " + questionModel.get('_id'));
             
             this.numberOfQuestionsAnswered++;
-            console.log(this.numberOfQuestionsAnswered + " - " + this.questionComponents.length);
+            //console.log(this.numberOfQuestionsAnswered + " - " + this.questionComponents.length);
             var allQuestionsAnswered = this.numberOfQuestionsAnswered >= this.questionComponents.length;
             if(allQuestionsAnswered) {
                 this.onQuizComplete();
@@ -188,7 +191,9 @@ define(function(require) {
 
          getQuestionComponents: function() {            
             return _.filter(this.allChildComponents, function(componentModel) { 
-                if (componentModel.get('_isQuestionType')) return componentModel; 
+                if (componentModel.get('_isQuestionType')) {
+                    return componentModel; 
+                }
             });
         },
 
@@ -201,8 +206,12 @@ define(function(require) {
             
             var isPass = false;
 
-            if (isPercentageBased) isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
-            else isPass = (score >= scoreToPass) ? true : false;
+            if (isPercentageBased) {
+                isPass = (scoreAsPercent >= scoreToPass) ? true : false; 
+            }
+            else {
+                isPass = (score >= scoreToPass) ? true : false;
+            }
 
             //section for learnerassistant data
             var allQuestions = {};

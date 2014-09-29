@@ -31,7 +31,9 @@ define(function(require) {
             //console.log("getRandomQuestionBlocks: " + this._id +  " - " + this._numQuestionBlocks);
             for (var i = 0; i < this._numQuestionBlocks; i++) {
                 var question = this.getRandomQuestion();
-                if (question !== undefined) questionBlocks.push(question);
+                if (question !== undefined) {
+                    questionBlocks.push(question);
+                }
             }
                 
             return questionBlocks;
