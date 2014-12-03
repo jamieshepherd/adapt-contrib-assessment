@@ -293,10 +293,10 @@ define(function(require) {
         setFeedbackMessage: function() {
             var feedback = this.get('_completionMessage').message;
 
+            feedback = feedback.replace("[FEEDBACK]", this.getFeedbackBand().feedback.toString());
             feedback = feedback.replace("[SCORE]", this.getScore());
             feedback = feedback.replace("[MAXSCORE]", this.getMaxScore().toString());
             feedback = feedback.replace("[PERCENT]", this.getScoreAsPercent().toString());
-            feedback = feedback.replace("[FEEDBACK]", this.getFeedbackBand().feedback.toString());
             
             this.set('feedbackMessage', feedback);
         },
