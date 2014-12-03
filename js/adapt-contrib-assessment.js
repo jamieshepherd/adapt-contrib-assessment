@@ -33,7 +33,7 @@ define(function(require) {
 				articleModel.set('_isComplete', true);
 			}
 			articleModel.set({assessmentModel:assessmentModel});
-			articleModel.getChildren().models = assessmentModel.setQuizData();				
+			articleModel.getChildren().models = assessmentModel.setQuizData();
 		});
 
 		var questionSubsetUsed = articleModel.getChildren().models.length < articleModel.getChildren().length;
@@ -48,19 +48,19 @@ define(function(require) {
 		var requireCheckCourseComplete = Adapt.course.get('_isAssessmentAttemptComplete') && !Adapt.course.get('_isComplete');
 		if(requireCheckCourseComplete) {
 			checkCourseCompletion();
-		} 
+		}
 	}
 
 	function onAssessmentComplete() {
 		//console.log("assessment.js:onAssessmentComplete");
 		if (!Adapt.course.get('_isComplete')) {
 			checkCourseCompletion();
-		} 
+		}
 	}
 
 	function checkCourseCompletion() {
 		//console.log("assessment.js, checkCourseCompletion");
-		// if the assessment is complete, and all non-assessment blocks are complete - then 
+		// if the assessment is complete, and all non-assessment blocks are complete - then
 		// all required course content has been viewed - set course to complete
 		var allNonAssessmentBlocksComplete = getAllNonAssessmentBlocksComplete();
 		if(allNonAssessmentBlocksComplete) {
@@ -69,17 +69,17 @@ define(function(require) {
 	}
 
 	 function getAllNonAssessmentBlocksComplete () {
-	 	var allComplete = true;
-      _.each(Adapt.blocks.models, function(model) {
-            var isPartOfAssessment = (model.getParent().get('_assessment') != undefined);
-            //console.log(model.get('_id') + " - " + model.get('_isComplete') + " - " + isPartOfAssessment);
-            if(!model.get('_isComplete') && !isPartOfAssessment) {
-            	allComplete = false;
-           	}                
-        }, this);
+		var allComplete = true;
+			_.each(Adapt.blocks.models, function(model) {
+				var isPartOfAssessment = (model.getParent().get('_assessment') != undefined);
+				//console.log(model.get('_id') + " - " + model.get('_isComplete') + " - " + isPartOfAssessment);
+				if(!model.get('_isComplete') && !isPartOfAssessment) {
+					allComplete = false;
+				}
+			}, this);
 
-        return allComplete;
-    }
+			return allComplete;
+		}
 
 	Adapt.on('articleView:preRender', function(view) {
 		var articleModel = view.model;
@@ -88,24 +88,24 @@ define(function(require) {
 			new AssessmentView({model:view.model});
 
 			// if assessment completed in a previous session then set article model to complete
-			// ideally this should be on data load but has to wait for scorm data ready 
+			// ideally this should be on data load but has to wait for scorm data ready
 			// - maybe init on adapt:initialize instead?
-        	var resetArticleCompletionStatus = (!articleModel.get('_isComplete') && Adapt.course.get('_isAssessmentAttemptComplete'));
-        	if(resetArticleCompletionStatus) {
-        		articleModel.set('_isComplete', true);
-        	}
-        }
-    });	
+			var resetArticleCompletionStatus = (!articleModel.get('_isComplete') && Adapt.course.get('_isAssessmentAttemptComplete'));
+			if(resetArticleCompletionStatus) {
+				articleModel.set('_isComplete', true);
+			}
+		}
+	});
 
 	Adapt.once('app:dataReady', function() {
 		// big assumption that there can only be a single assessment
 		var assessmentArticle = _.find(Adapt.articles.models, function(article) {
-            return (article.get('_assessment') && article.get('_assessment')._isEnabled);
-        });
+			return (article.get('_assessment') && article.get('_assessment')._isEnabled);
+		});
 
-        if(assessmentArticle != undefined) {
-        	initQuizData(assessmentArticle);
-        }
+		if(assessmentArticle != undefined) {
+			initQuizData(assessmentArticle);
+		}
 	});
 
 })
